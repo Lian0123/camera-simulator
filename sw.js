@@ -1,7 +1,7 @@
 // Service Worker for Pro Camera Simulator PWA
-// Version: 2.0.0 — Improved offline support with cache-first for static, network-first for dynamic
+// Version: 2.1.0 — Face detection + image loading improvements
 
-const CACHE_VERSION = 'camera-sim-v2';
+const CACHE_VERSION = 'camera-sim-v3';
 const STATIC_CACHE = CACHE_VERSION + '-static';
 const DYNAMIC_CACHE = CACHE_VERSION + '-dynamic';
 const IMAGE_CACHE = CACHE_VERSION + '-images';

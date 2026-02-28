@@ -182,6 +182,14 @@
     .focus-ring { position: absolute; width: 56px; height: 56px; border: 2px solid rgba(79,140,255,0.8); border-radius: 50%; transform: translate(-50%,-50%); pointer-events: none; animation: focusPulse 0.6s ease-out forwards; }
     @keyframes focusPulse { from { opacity: 1; transform: translate(-50%,-50%) scale(0.5); } to { opacity: 0; transform: translate(-50%,-50%) scale(1.2); } }
 
+    /* ===== Face Detection Overlay ===== */
+    .face-box { position: absolute; border: 2px solid rgba(60,255,155,0.7); border-radius: 4px; pointer-events: none; transition: all 0.3s ease; }
+    .face-label { position: absolute; top: -20px; left: 0; background: rgba(60,255,155,0.85); color: #080a12; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+    .face-indicator { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 500; background: rgba(79,140,255,0.1); color: rgba(79,140,255,0.8); border: 1px solid rgba(79,140,255,0.2); animation: pulse 1.5s ease-in-out infinite; }
+    .face-indicator.detected { background: rgba(60,255,155,0.15); color: #3cff9b; border: 1px solid rgba(60,255,155,0.3); animation: none; }
+    .face-indicator.none { background: rgba(255,120,80,0.1); color: #ff7850; border: 1px solid rgba(255,120,80,0.2); animation: none; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
     /* ===== Controls ===== */
     .controls { display: flex; flex-direction: column; gap: 10px; }
     .controls::-webkit-scrollbar { width: 5px; }
@@ -477,7 +485,11 @@
         tipForeheadAdjust: "調整額頭比例大小",
         tipFaceBrightening: "提亮面部膚色，增加光澤感",
         tipJawlineDefine: "強化下顎線條，使輪廓更分明",
+        faceDetected: "偵測到人臉", noFaceDetected: "未偵測到人臉", detectingFace: "偵測中...",
+        faceCount: "張臉", faceRegion: "臉部區域",
+        tipFaceDetect: "啟用美顏時自動偵測人臉位置，將美顏效果精準套用於臉部區域",
         panelOffset: "面板偏移", tipPanelOffset: "調整控制面板的垂直位置，避免調參時擋住預覽圖片",
+        loading: "載入中...", imgLoadFailed: "圖片載入失敗", retry: "重試",
         installApp: "安裝應用", installPrompt: "安裝到手機桌面", dismiss: "關閉",
         footerSource: "預設圖片：default.jpeg（可上傳自訂圖片）",
         footerNote: "預覽使用 SVG 濾鏡即時套用曲線；匯出套用完整像素處理。",
@@ -568,7 +580,11 @@
         tipForeheadAdjust: "Adjust forehead proportion and size",
         tipFaceBrightening: "Brighten facial skin tone for a radiant glow",
         tipJawlineDefine: "Enhance jawline definition for sharper contours",
+        faceDetected: "Face detected", noFaceDetected: "No face detected", detectingFace: "Detecting...",
+        faceCount: "face(s)", faceRegion: "Face region",
+        tipFaceDetect: "Automatically detects face position when beauty mode is on, applying effects precisely to facial areas",
         panelOffset: "Panel Offset", tipPanelOffset: "Adjust control panel position to avoid blocking image details",
+        loading: "Loading...", imgLoadFailed: "Image failed to load", retry: "Retry",
         installApp: "Install App", installPrompt: "Install to home screen", dismiss: "Dismiss",
         footerSource: "Default image: default.jpeg (upload your own image)",
         footerNote: "Preview uses SVG filter for real-time curve; export applies full pixel processing.",
@@ -659,7 +675,11 @@
         tipForeheadAdjust: "額の比率とサイズを調整",
         tipFaceBrightening: "顔の肌色を明るくし、輝きを追加",
         tipJawlineDefine: "フェイスラインを強調してシャープな輪郭に",
+        faceDetected: "顔を検出", noFaceDetected: "顔が検出されません", detectingFace: "検出中...",
+        faceCount: "人の顔", faceRegion: "顔の領域",
+        tipFaceDetect: "ビューティーモードON時に自動で顔位置を検出し、顔の領域に精密にエフェクトを適用",
         panelOffset: "パネルオフセット", tipPanelOffset: "設定調整時に画像を遮らないようパネル位置を調整",
+        loading: "読み込み中...", imgLoadFailed: "画像の読み込みに失敗", retry: "再試行",
         installApp: "アプリ追加", installPrompt: "ホーム画面に追加", dismiss: "閉じる",
         footerSource: "デフォルト画像：default.jpeg（画像アップロード可能）",
         footerNote: "プレビューはSVGフィルターで曲線をリアルタイム適用。出力は完全なピクセル処理。",
@@ -733,6 +753,147 @@
       {x:0.36,y:0.36},{x:0.43,y:0.43},{x:0.5,y:0.5},{x:0.57,y:0.57},{x:0.64,y:0.64},
       {x:0.71,y:0.71},{x:0.79,y:0.79},{x:0.86,y:0.86},{x:0.93,y:0.93},{x:1,y:1}
     ];
+
+    /* ========================= Face Detection ========================= */
+    // Use browser FaceDetector API (Chrome/Edge) or skin-tone heuristic fallback
+    const faceDetectorSupported = typeof window !== 'undefined' && 'FaceDetector' in window;
+
+    async function detectFaces(imgElement) {
+      if (!imgElement || !imgElement.naturalWidth) return [];
+
+      // Strategy 1: FaceDetector API (Shape Detection API)
+      if (faceDetectorSupported) {
+        try {
+          const detector = new FaceDetector({ fastMode: true, maxDetectedFaces: 10 });
+          const faces = await detector.detect(imgElement);
+          const iw = imgElement.naturalWidth, ih = imgElement.naturalHeight;
+          return faces.map((f, idx) => ({
+            x: f.boundingBox.x / iw,
+            y: f.boundingBox.y / ih,
+            width: f.boundingBox.width / iw,
+            height: f.boundingBox.height / ih,
+            confidence: 0.95,
+            landmarks: (f.landmarks || []).map(lm => ({
+              type: lm.type,
+              locations: lm.locations.map(l => ({ x: l.x / iw, y: l.y / ih }))
+            })),
+            id: idx
+          }));
+        } catch (e) {
+          console.warn('FaceDetector failed, using fallback:', e);
+        }
+      }
+
+      // Strategy 2: Canvas-based skin-tone detection fallback
+      try {
+        const canvas = document.createElement('canvas');
+        const scale = Math.min(1, 320 / Math.max(imgElement.naturalWidth, imgElement.naturalHeight));
+        const w = Math.round(imgElement.naturalWidth * scale);
+        const h = Math.round(imgElement.naturalHeight * scale);
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(imgElement, 0, 0, w, h);
+        const imageData = ctx.getImageData(0, 0, w, h);
+        const data = imageData.data;
+
+        // Build skin-tone mask
+        const skinMask = new Uint8Array(w * h);
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i], g = data[i+1], b = data[i+2];
+          // YCbCr skin detection
+          const y2 = 0.299 * r + 0.587 * g + 0.114 * b;
+          const cb = 128 - 0.168736 * r - 0.331264 * g + 0.5 * b;
+          const cr = 128 + 0.5 * r - 0.418688 * g - 0.081312 * b;
+          if (y2 > 60 && cb > 77 && cb < 127 && cr > 133 && cr < 173) {
+            skinMask[i / 4] = 1;
+          }
+        }
+
+        // Find connected regions of skin pixels (simple region growing)
+        const visited = new Uint8Array(w * h);
+        const faces = [];
+
+        function floodFill(startIdx) {
+          const queue = [startIdx];
+          let minX = w, maxX = 0, minY = h, maxY = 0, count = 0;
+          while (queue.length > 0) {
+            const idx = queue.pop();
+            if (visited[idx]) continue;
+            visited[idx] = 1;
+            const px = idx % w, py = Math.floor(idx / w);
+            minX = Math.min(minX, px); maxX = Math.max(maxX, px);
+            minY = Math.min(minY, py); maxY = Math.max(maxY, py);
+            count++;
+            // Check 4-neighbors (skip some for speed)
+            for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+              const nx = px + dx, ny = py + dy;
+              if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+                const ni = ny * w + nx;
+                if (!visited[ni] && skinMask[ni]) queue.push(ni);
+              }
+            }
+          }
+          return { minX, maxX, minY, maxY, count };
+        }
+
+        for (let i = 0; i < skinMask.length; i++) {
+          if (skinMask[i] && !visited[i]) {
+            const region = floodFill(i);
+            const rw = region.maxX - region.minX;
+            const rh = region.maxY - region.minY;
+            // Filter: minimum size & roughly face-shaped (aspect ratio 0.5-2.0)
+            const minDim = Math.min(w, h) * 0.08;
+            const ratio = rw / (rh || 1);
+            if (rw > minDim && rh > minDim && ratio > 0.5 && ratio < 2.0 && region.count > minDim * minDim * 0.3) {
+              faces.push({
+                x: region.minX / w,
+                y: region.minY / h,
+                width: rw / w,
+                height: rh / h,
+                confidence: 0.6,
+                landmarks: [],
+                id: faces.length
+              });
+            }
+          }
+        }
+
+        // Sort by area (largest first) and take top 5
+        faces.sort((a, b) => (b.width * b.height) - (a.width * a.height));
+        return faces.slice(0, 5);
+      } catch (e) {
+        console.warn('Skin-tone fallback failed:', e);
+        return [];
+      }
+    }
+
+    // Generate face region mask on canvas (for face-aware processing)
+    function createFaceMask(ctx, w, h, faces, expand = 1.3) {
+      const mask = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+      // Clear with transparent
+      ctx.save();
+      ctx.clearRect(0, 0, w, h);
+      ctx.globalCompositeOperation = 'source-over';
+      
+      faces.forEach(face => {
+        const cx = (face.x + face.width / 2) * w;
+        const cy = (face.y + face.height / 2) * h;
+        const rx = (face.width / 2) * w * expand;
+        const ry = (face.height / 2) * h * expand;
+        const r = Math.max(rx, ry);
+        
+        const grd = ctx.createRadialGradient(cx, cy, r * 0.3, cx, cy, r);
+        grd.addColorStop(0, 'rgba(255,255,255,1)');
+        grd.addColorStop(0.7, 'rgba(255,255,255,0.6)');
+        grd.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = grd;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      
+      ctx.restore();
+    }
 
     /* ========================= Compute Filters ========================= */
     function computeFilters(settings, post, lens, motionBlur, zoom, neuralDenoise, noiseLevel, flashBoost, portrait) {
@@ -952,7 +1113,7 @@
     }
 
     /* ========================= Camera Preview ========================= */
-    function CameraPreview({ settings, post, lens, defects, flashSettings, motionBlur, composition, watermark, zoom, neuralDenoise, noiseLevel, grain, portrait, setZoom, customImage, setCustomImage, curvePoints, t }) {
+    function CameraPreview({ settings, post, lens, defects, flashSettings, motionBlur, composition, watermark, zoom, neuralDenoise, noiseLevel, grain, portrait, setZoom, customImage, setCustomImage, curvePoints, t, faceRegions, setFaceRegions, detectingFaces, setDetectingFaces }) {
       const [aspect, setAspect] = useState("3:2");
       const [flashActive, setFlashActive] = useState(false);
       const [focusPt, setFocusPt] = useState(null);
@@ -960,6 +1121,8 @@
       const flashRef = useRef(null);
       const frameRef = useRef(null);
       const fileRef = useRef(null);
+      const [imgLoaded, setImgLoaded] = useState(false);
+      const [imgError, setImgError] = useState(false);
 
       const defaultImg = "./default.jpeg";
       const imgSrc = customImage || defaultImg;
@@ -968,6 +1131,8 @@
       function handleUpload(e) {
         const file = e.target.files?.[0];
         if (!file) return;
+        setImgLoaded(false);
+        setImgError(false);
         const reader = new FileReader();
         reader.onload = (ev) => setCustomImage(ev.target?.result);
         reader.readAsDataURL(file);
@@ -988,6 +1153,45 @@
         if (gEl) gEl.setAttribute("tableValues", tv);
         if (bEl) bEl.setAttribute("tableValues", tv);
       }, [curvePoints]);
+
+      // Face detection: runs when image loads or customImage changes
+      const faceDetectTimerRef = useRef(null);
+      useEffect(() => {
+        if (!portrait.beautyMode) {
+          setFaceRegions([]);
+          setDetectingFaces(false);
+          return;
+        }
+        const img = imgRef.current;
+        if (!img) return;
+
+        function runDetection() {
+          if (!img.naturalWidth || !img.complete) return;
+          setDetectingFaces(true);
+          detectFaces(img).then(faces => {
+            setFaceRegions(faces);
+            setDetectingFaces(false);
+          }).catch(() => {
+            setFaceRegions([]);
+            setDetectingFaces(false);
+          });
+        }
+
+        // Debounce to avoid rapid re-detect
+        clearTimeout(faceDetectTimerRef.current);
+        faceDetectTimerRef.current = setTimeout(() => {
+          if (img.complete && img.naturalWidth) {
+            runDetection();
+          } else {
+            img.addEventListener('load', runDetection, { once: true });
+          }
+        }, 300);
+
+        return () => {
+          clearTimeout(faceDetectTimerRef.current);
+          img.removeEventListener('load', runDetection);
+        };
+      }, [customImage, portrait.beautyMode]);
 
       function triggerFlash() {
         if (!flashSettings.enabled) return;
@@ -1025,7 +1229,7 @@
             <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
               <button className="muted-btn" onClick={() => fileRef.current?.click()}>{t("upload")}</button>
               <input type="file" ref={fileRef} accept="image/*" onChange={handleUpload} style={{display:"none"}} />
-              {customImage && <button className="muted-btn" onClick={() => setCustomImage(null)}>{t("resetImg")}</button>}
+              {customImage && <button className="muted-btn" onClick={() => { setCustomImage(null); setImgLoaded(false); setImgError(false); }}>{t("resetImg")}</button>}
               <div className="aspect-toggle">
                 {["3:2","4:3","16:9","1:1"].map(a => (
                   <button key={a} className={"aspect-btn " + (aspect===a?"active":"")} onClick={() => setAspect(a)}>{a}</button>
@@ -1040,13 +1244,30 @@
             setTimeout(() => setFocusPt(null), 2000);
           }}>
             <div className={`img-wrap a-${aspect.replace(":","-")}`}>
-              <img ref={imgRef} src={imgSrc} alt="Preview" className="preview-img" {...(!isLocalImg ? {crossOrigin:"anonymous"} : {})} loading="lazy"
+              <img ref={imgRef} src={imgSrc} alt="Preview" className="preview-img" {...(!isLocalImg ? {crossOrigin:"anonymous"} : {})}
+                onLoad={() => { setImgLoaded(true); setImgError(false); }}
+                onError={() => { setImgError(true); setImgLoaded(false); }}
                 style={{
                   transform: `scale(${zoom})`,
                   filter: cssFilter,
-                  transition: "transform 250ms cubic-bezier(.2,.9,.2,1), filter 200ms ease"
+                  transition: "transform 250ms cubic-bezier(.2,.9,.2,1), filter 200ms ease",
+                  opacity: imgLoaded ? 1 : 0
                 }}
               />
+              {!imgLoaded && !imgError && (
+                <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--glass)",color:"var(--text-dim)",fontSize:13}}>
+                  ⏳ {t("loading")}
+                </div>
+              )}
+              {imgError && (
+                <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"var(--glass)",color:"var(--text-dim)",fontSize:13,gap:8}}>
+                  <span style={{fontSize:24}}>📷</span>
+                  <span>{t("imgLoadFailed")}</span>
+                  <button className="muted-btn" onClick={() => { setImgError(false); setImgLoaded(false); const img = imgRef.current; if(img){img.src=''; setTimeout(()=>{img.src=imgSrc},50);} }}>
+                    {t("retry")}
+                  </button>
+                </div>
+              )}
               <div className="overlay">
                 <div className="vignette" style={{opacity: lens.vignette}} />
                 <div className={"dust " + (defects.dust > 0.02 ? "vis" : "")} />
@@ -1093,6 +1314,21 @@
 
                 <div ref={flashRef} className="flash-overlay" />
                 {focusPt && <div className="focus-ring" style={{left:`${focusPt.x*100}%`, top:`${focusPt.y*100}%`}} />}
+                
+                {/* Face detection overlay */}
+                {portrait.beautyMode && faceRegions.length > 0 && faceRegions.map((face, idx) => (
+                  <div key={idx} className="face-box" style={{
+                    left: `${face.x * 100}%`,
+                    top: `${face.y * 100}%`,
+                    width: `${face.width * 100}%`,
+                    height: `${face.height * 100}%`
+                  }}>
+                    <span className="face-label">
+                      {t("faceRegion")} #{idx + 1}
+                      {face.confidence && ` (${Math.round(face.confidence * 100)}%)`}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -1128,7 +1364,7 @@
     }
 
     /* ========================= Export Controls ========================= */
-    function ExportControls({ settings, post, lens, defects, flashSettings, motionBlur, watermark, curvePoints, zoom, neuralDenoise, noiseLevel, grain, portrait, customImage, isLoading, setIsLoading, t }) {
+    function ExportControls({ settings, post, lens, defects, flashSettings, motionBlur, watermark, curvePoints, zoom, neuralDenoise, noiseLevel, grain, portrait, customImage, isLoading, setIsLoading, t, faceRegions }) {
 
       function exportJSON() {
         const data = { settings, post, lens, defects, flashSettings, motionBlur, watermark, curvePoints, zoom, neuralDenoise, noiseLevel, grain, portrait, exportedAt: new Date().toISOString() };
@@ -1247,83 +1483,149 @@
             ctx.putImageData(imgData, 0, 0);
           }
 
-          // Portrait processing in export
+          // Portrait processing in export (face-aware when face regions available)
           if (portrait?.beautyMode) {
-            // Skin smoothing (Gaussian-like blur on export)
+            // Helper: check if pixel (px, py) is within any face region (with expand factor)
+            const hasFaces = faceRegions && faceRegions.length > 0;
+            function pixelInFace(px, py, expand = 1.3) {
+              if (!hasFaces) return 1.0; // No face data: apply globally
+              for (const face of faceRegions) {
+                const cx = (face.x + face.width / 2) * w;
+                const cy = (face.y + face.height / 2) * h;
+                const rx = (face.width / 2) * w * expand;
+                const ry = (face.height / 2) * h * expand;
+                const dx = (px - cx) / rx, dy = (py - cy) / ry;
+                const dist = dx * dx + dy * dy;
+                if (dist <= 1) return clamp(1 - dist, 0, 1); // Smooth falloff
+              }
+              return 0;
+            }
+            // Get face center (avg of all faces, or image center if none)
+            const faceCenter = hasFaces
+              ? { x: faceRegions.reduce((s, f) => s + (f.x + f.width/2), 0) / faceRegions.length,
+                  y: faceRegions.reduce((s, f) => s + (f.y + f.height/2), 0) / faceRegions.length }
+              : { x: 0.5, y: 0.5 };
+            const fcx = faceCenter.x * w, fcy = faceCenter.y * h;
+            // Avg face size
+            const avgFaceW = hasFaces ? faceRegions.reduce((s, f) => s + f.width, 0) / faceRegions.length : 0.3;
+            const avgFaceH = hasFaces ? faceRegions.reduce((s, f) => s + f.height, 0) / faceRegions.length : 0.4;
+
+            // Skin smoothing (Gaussian-like blur on face regions)
             if (portrait.skinSmoothing > 0) {
               const tmp = document.createElement("canvas"); tmp.width = w; tmp.height = h;
               const tctx = tmp.getContext("2d");
               const blurR = clamp(portrait.skinSmoothing * 0.04, 0, 8);
               tctx.filter = `blur(${blurR}px)`;
               tctx.drawImage(canvas, 0, 0);
-              // Blend original with blurred (preserve edges)
-              ctx.globalAlpha = clamp(portrait.skinSmoothing * 0.008, 0, 0.7);
-              ctx.drawImage(tmp, 0, 0);
-              ctx.globalAlpha = 1;
+              if (hasFaces) {
+                // Only blend in face regions
+                const blurred = tctx.getImageData(0, 0, w, h);
+                const imgData = ctx.getImageData(0, 0, w, h);
+                const d = imgData.data, bd = blurred.data;
+                const alpha = clamp(portrait.skinSmoothing * 0.008, 0, 0.7);
+                for (let y2 = 0; y2 < h; y2++) {
+                  for (let x2 = 0; x2 < w; x2++) {
+                    const fi = pixelInFace(x2, y2, 1.2);
+                    if (fi > 0) {
+                      const idx = (y2 * w + x2) * 4;
+                      const a2 = alpha * fi;
+                      d[idx] = d[idx] * (1 - a2) + bd[idx] * a2;
+                      d[idx+1] = d[idx+1] * (1 - a2) + bd[idx+1] * a2;
+                      d[idx+2] = d[idx+2] * (1 - a2) + bd[idx+2] * a2;
+                    }
+                  }
+                }
+                ctx.putImageData(imgData, 0, 0);
+              } else {
+                ctx.globalAlpha = clamp(portrait.skinSmoothing * 0.008, 0, 0.7);
+                ctx.drawImage(tmp, 0, 0);
+                ctx.globalAlpha = 1;
+              }
             }
-            // Eye brightening (increase brightness in image center area)
+            // Eye brightening (face-aware: only brighten bright pixels in face regions)
             if (portrait.eyeBrightening > 0) {
               const imgData = ctx.getImageData(0, 0, w, h);
               const d = imgData.data;
               const boost = clamp(portrait.eyeBrightening * 0.15, 0, 20);
-              for (let i = 0; i < d.length; i += 4) {
-                const lum = (d[i] * 0.299 + d[i+1] * 0.587 + d[i+2] * 0.114);
-                if (lum > 150) {
-                  d[i] = clamp(d[i] + boost, 0, 255);
-                  d[i+1] = clamp(d[i+1] + boost, 0, 255);
-                  d[i+2] = clamp(d[i+2] + boost, 0, 255);
+              for (let y2 = 0; y2 < h; y2++) {
+                for (let x2 = 0; x2 < w; x2++) {
+                  const fi = pixelInFace(x2, y2, 1.0);
+                  if (fi > 0) {
+                    const idx = (y2 * w + x2) * 4;
+                    const lum = (d[idx] * 0.299 + d[idx+1] * 0.587 + d[idx+2] * 0.114);
+                    if (lum > 150) {
+                      const b2 = boost * fi;
+                      d[idx] = clamp(d[idx] + b2, 0, 255);
+                      d[idx+1] = clamp(d[idx+1] + b2, 0, 255);
+                      d[idx+2] = clamp(d[idx+2] + b2, 0, 255);
+                    }
+                  }
                 }
               }
               ctx.putImageData(imgData, 0, 0);
             }
-            // Teeth whitening (boost brightness of yellowish tones)
+            // Teeth whitening (face-aware)
             if (portrait.teethWhitening > 0) {
               const imgData = ctx.getImageData(0, 0, w, h);
               const d = imgData.data;
-              const tw = clamp(portrait.teethWhitening * 0.1, 0, 15);
-              for (let i = 0; i < d.length; i += 4) {
-                // Detect warm/yellowish pixels
-                if (d[i] > 150 && d[i+1] > 130 && d[i+2] < d[i] - 30) {
-                  d[i] = clamp(d[i] + tw * 0.6, 0, 255);
-                  d[i+1] = clamp(d[i+1] + tw * 0.7, 0, 255);
-                  d[i+2] = clamp(d[i+2] + tw * 1.2, 0, 255);
+              const tw2 = clamp(portrait.teethWhitening * 0.1, 0, 15);
+              for (let y2 = 0; y2 < h; y2++) {
+                for (let x2 = 0; x2 < w; x2++) {
+                  const fi = pixelInFace(x2, y2, 1.0);
+                  if (fi > 0) {
+                    const idx = (y2 * w + x2) * 4;
+                    if (d[idx] > 150 && d[idx+1] > 130 && d[idx+2] < d[idx] - 30) {
+                      d[idx] = clamp(d[idx] + tw2 * 0.6 * fi, 0, 255);
+                      d[idx+1] = clamp(d[idx+1] + tw2 * 0.7 * fi, 0, 255);
+                      d[idx+2] = clamp(d[idx+2] + tw2 * 1.2 * fi, 0, 255);
+                    }
+                  }
                 }
               }
               ctx.putImageData(imgData, 0, 0);
             }
-            // Skin tone warmth
+            // Skin tone warmth (face-aware)
             if (portrait.skinToneWarmth !== 0) {
               const imgData = ctx.getImageData(0, 0, w, h);
               const d = imgData.data;
               const sw = portrait.skinToneWarmth * 0.08;
-              for (let i = 0; i < d.length; i += 4) {
-                d[i] = clamp(d[i] + sw, 0, 255);
-                d[i+2] = clamp(d[i+2] - sw * 0.5, 0, 255);
-              }
-              ctx.putImageData(imgData, 0, 0);
-            }
-            // Red eye removal
-            if (portrait.redEyeRemoval) {
-              const imgData = ctx.getImageData(0, 0, w, h);
-              const d = imgData.data;
-              for (let i = 0; i < d.length; i += 4) {
-                const r = d[i], g = d[i+1], b = d[i+2];
-                if (r > 120 && g < 80 && b < 80 && r > g * 2) {
-                  const avg = (g + b) / 2;
-                  d[i] = avg;
+              for (let y2 = 0; y2 < h; y2++) {
+                for (let x2 = 0; x2 < w; x2++) {
+                  const fi = pixelInFace(x2, y2, 1.3);
+                  if (fi > 0) {
+                    const idx = (y2 * w + x2) * 4;
+                    d[idx] = clamp(d[idx] + sw * fi, 0, 255);
+                    d[idx+2] = clamp(d[idx+2] - sw * 0.5 * fi, 0, 255);
+                  }
                 }
               }
               ctx.putImageData(imgData, 0, 0);
             }
-            // Portrait background blur
+            // Red eye removal (face-aware)
+            if (portrait.redEyeRemoval) {
+              const imgData = ctx.getImageData(0, 0, w, h);
+              const d = imgData.data;
+              for (let y2 = 0; y2 < h; y2++) {
+                for (let x2 = 0; x2 < w; x2++) {
+                  if (pixelInFace(x2, y2, 1.0) > 0) {
+                    const idx = (y2 * w + x2) * 4;
+                    const r = d[idx], g = d[idx+1], b = d[idx+2];
+                    if (r > 120 && g < 80 && b < 80 && r > g * 2) {
+                      d[idx] = (g + b) / 2;
+                    }
+                  }
+                }
+              }
+              ctx.putImageData(imgData, 0, 0);
+            }
+            // Portrait background blur (use face regions as sharp center)
             if (portrait.portraitBlur > 0) {
               const tmp = document.createElement("canvas"); tmp.width = w; tmp.height = h;
               const tctx = tmp.getContext("2d");
               const bR = clamp(portrait.portraitBlur * 0.05, 0, 10);
               tctx.filter = `blur(${bR}px)`;
               tctx.drawImage(canvas, 0, 0);
-              // Keep center sharp (simple center-weighted mask)
-              const grd = ctx.createRadialGradient(w/2, h/2, Math.min(w,h)*0.2, w/2, h/2, Math.max(w,h)*0.6);
+              const grd = ctx.createRadialGradient(fcx, fcy, Math.min(w, h) * avgFaceW * 0.8, fcx, fcy, Math.max(w, h) * 0.6);
               grd.addColorStop(0, "rgba(0,0,0,0)");
               grd.addColorStop(1, "rgba(0,0,0,1)");
               ctx.save();
@@ -1337,98 +1639,119 @@
               ctx.globalAlpha = 1;
               ctx.restore();
             }
-            // Face brightening (brighten skin-tone pixels)
+            // Face brightening (face-aware)
             if (portrait.faceBrightening > 0) {
               const imgData = ctx.getImageData(0, 0, w, h);
               const d = imgData.data;
               const fb = clamp(portrait.faceBrightening * 0.18, 0, 20);
-              for (let i = 0; i < d.length; i += 4) {
-                if (d[i] > 100 && d[i+1] > 70 && d[i+2] > 50 && d[i] > d[i+2]) {
-                  d[i] = clamp(d[i] + fb, 0, 255);
-                  d[i+1] = clamp(d[i+1] + fb * 0.9, 0, 255);
-                  d[i+2] = clamp(d[i+2] + fb * 0.8, 0, 255);
+              for (let y2 = 0; y2 < h; y2++) {
+                for (let x2 = 0; x2 < w; x2++) {
+                  const fi = pixelInFace(x2, y2, 1.2);
+                  if (fi > 0) {
+                    const idx = (y2 * w + x2) * 4;
+                    d[idx] = clamp(d[idx] + fb * fi, 0, 255);
+                    d[idx+1] = clamp(d[idx+1] + fb * 0.9 * fi, 0, 255);
+                    d[idx+2] = clamp(d[idx+2] + fb * 0.8 * fi, 0, 255);
+                  }
                 }
               }
               ctx.putImageData(imgData, 0, 0);
             }
-            // Jawline define (midtone contrast enhancement)
+            // Jawline define (face-aware midtone contrast)
             if (portrait.jawlineDefine > 0) {
               const imgData = ctx.getImageData(0, 0, w, h);
               const d = imgData.data;
               const factor = 1 + clamp(portrait.jawlineDefine * 0.003, 0, 0.3);
-              for (let i = 0; i < d.length; i += 4) {
-                const lum = d[i] * 0.299 + d[i+1] * 0.587 + d[i+2] * 0.114;
-                if (lum > 60 && lum < 160) {
-                  d[i] = clamp((d[i] - 128) * factor + 128, 0, 255);
-                  d[i+1] = clamp((d[i+1] - 128) * factor + 128, 0, 255);
-                  d[i+2] = clamp((d[i+2] - 128) * factor + 128, 0, 255);
+              for (let y2 = 0; y2 < h; y2++) {
+                for (let x2 = 0; x2 < w; x2++) {
+                  const fi = pixelInFace(x2, y2, 1.3);
+                  if (fi > 0) {
+                    const idx = (y2 * w + x2) * 4;
+                    const lum = d[idx] * 0.299 + d[idx+1] * 0.587 + d[idx+2] * 0.114;
+                    if (lum > 60 && lum < 160) {
+                      const f2 = 1 + (factor - 1) * fi;
+                      d[idx] = clamp((d[idx] - 128) * f2 + 128, 0, 255);
+                      d[idx+1] = clamp((d[idx+1] - 128) * f2 + 128, 0, 255);
+                      d[idx+2] = clamp((d[idx+2] - 128) * f2 + 128, 0, 255);
+                    }
+                  }
                 }
               }
               ctx.putImageData(imgData, 0, 0);
             }
-            // Lip enhance (saturate reddish/pinkish tones)
+            // Lip enhance (face-aware)
             if (portrait.lipEnhance > 0) {
               const imgData = ctx.getImageData(0, 0, w, h);
               const d = imgData.data;
               const le = clamp(portrait.lipEnhance * 0.12, 0, 15);
-              for (let i = 0; i < d.length; i += 4) {
-                if (d[i] > 120 && d[i] > d[i+1] * 1.1 && d[i] > d[i+2] * 1.05) {
-                  d[i] = clamp(d[i] + le, 0, 255);
-                  d[i+1] = clamp(d[i+1] + le * 0.3, 0, 255);
+              for (let y2 = 0; y2 < h; y2++) {
+                for (let x2 = 0; x2 < w; x2++) {
+                  const fi = pixelInFace(x2, y2, 1.0);
+                  if (fi > 0) {
+                    const idx = (y2 * w + x2) * 4;
+                    if (d[idx] > 120 && d[idx] > d[idx+1] * 1.1 && d[idx] > d[idx+2] * 1.05) {
+                      d[idx] = clamp(d[idx] + le * fi, 0, 255);
+                      d[idx+1] = clamp(d[idx+1] + le * 0.3 * fi, 0, 255);
+                    }
+                  }
                 }
               }
               ctx.putImageData(imgData, 0, 0);
             }
-            // Face slimming & Nose thinning & Chin/Cheek/Forehead (gradient-based simulation)
+            // Face slimming & Nose thinning & Chin/Cheek/Forehead (face-aware gradients)
             {
               let needGradient = (portrait.faceSlimming || 0) > 0 || (portrait.noseThinning || 0) > 0
                 || portrait.chinAdjust !== 0 || portrait.cheekAdjust !== 0 || portrait.foreheadAdjust !== 0;
               if (needGradient) {
                 ctx.save();
                 ctx.globalCompositeOperation = "soft-light";
-                // Face slimming: darken sides to simulate narrower face
+                // Face slimming: darken sides relative to face center
                 if (portrait.faceSlimming > 0) {
                   const alpha = clamp(portrait.faceSlimming * 0.004, 0, 0.4);
-                  const grdL = ctx.createLinearGradient(0, 0, w * 0.25, 0);
+                  const faceW2 = avgFaceW * w;
+                  const grdL = ctx.createLinearGradient(fcx - faceW2, 0, fcx - faceW2 * 0.3, 0);
                   grdL.addColorStop(0, `rgba(0,0,0,${alpha})`); grdL.addColorStop(1, "rgba(0,0,0,0)");
-                  ctx.fillStyle = grdL; ctx.fillRect(0, h * 0.25, w * 0.25, h * 0.5);
-                  const grdR = ctx.createLinearGradient(w, 0, w * 0.75, 0);
+                  ctx.fillStyle = grdL; ctx.fillRect(fcx - faceW2, fcy - avgFaceH * h * 0.5, faceW2 * 0.7, avgFaceH * h);
+                  const grdR = ctx.createLinearGradient(fcx + faceW2, 0, fcx + faceW2 * 0.3, 0);
                   grdR.addColorStop(0, `rgba(0,0,0,${alpha})`); grdR.addColorStop(1, "rgba(0,0,0,0)");
-                  ctx.fillStyle = grdR; ctx.fillRect(w * 0.75, h * 0.25, w * 0.25, h * 0.5);
+                  ctx.fillStyle = grdR; ctx.fillRect(fcx + faceW2 * 0.3, fcy - avgFaceH * h * 0.5, faceW2 * 0.7, avgFaceH * h);
                 }
-                // Nose thinning: center vertical highlight
+                // Nose thinning: highlight at face center
                 if (portrait.noseThinning > 0) {
                   const alpha = clamp(portrait.noseThinning * 0.004, 0, 0.4);
-                  const grd = ctx.createRadialGradient(w * 0.5, h * 0.45, 0, w * 0.5, h * 0.45, Math.min(w, h) * 0.15);
+                  const grd = ctx.createRadialGradient(fcx, fcy * 1.05, 0, fcx, fcy * 1.05, Math.min(w, h) * avgFaceW * 0.25);
                   grd.addColorStop(0, `rgba(255,255,255,${alpha})`); grd.addColorStop(1, "rgba(255,255,255,0)");
                   ctx.fillStyle = grd; ctx.fillRect(0, 0, w, h);
                 }
-                // Chin: bottom gradient
+                // Chin: gradient below face center
                 if (portrait.chinAdjust !== 0) {
                   const alpha = clamp(Math.abs(portrait.chinAdjust) * 0.003, 0, 0.3);
                   const color = portrait.chinAdjust > 0 ? `rgba(255,255,255,${alpha})` : `rgba(0,0,0,${alpha})`;
-                  const grd = ctx.createLinearGradient(0, h * 0.7, 0, h);
+                  const chinY = fcy + avgFaceH * h * 0.35;
+                  const grd = ctx.createLinearGradient(0, chinY, 0, chinY + avgFaceH * h * 0.3);
                   grd.addColorStop(0, "rgba(0,0,0,0)"); grd.addColorStop(1, color);
-                  ctx.fillStyle = grd; ctx.fillRect(0, 0, w, h);
+                  ctx.fillStyle = grd; ctx.fillRect(fcx - avgFaceW * w * 0.5, chinY, avgFaceW * w, avgFaceH * h * 0.3);
                 }
-                // Cheek: side gradients
+                // Cheek: side gradients relative to face
                 if (portrait.cheekAdjust !== 0) {
                   const alpha = clamp(Math.abs(portrait.cheekAdjust) * 0.003, 0, 0.3);
                   const color = portrait.cheekAdjust > 0 ? `rgba(0,0,0,${alpha})` : `rgba(255,255,255,${alpha})`;
-                  const grdL = ctx.createLinearGradient(0, 0, w * 0.3, 0);
+                  const cheekW = avgFaceW * w * 0.35;
+                  const grdL = ctx.createLinearGradient(fcx - avgFaceW * w * 0.5, 0, fcx - avgFaceW * w * 0.15, 0);
                   grdL.addColorStop(0, color); grdL.addColorStop(1, "rgba(0,0,0,0)");
-                  ctx.fillStyle = grdL; ctx.fillRect(0, h * 0.3, w * 0.3, h * 0.4);
-                  const grdR = ctx.createLinearGradient(w, 0, w * 0.7, 0);
+                  ctx.fillStyle = grdL; ctx.fillRect(fcx - avgFaceW * w * 0.5, fcy - avgFaceH * h * 0.3, cheekW, avgFaceH * h * 0.6);
+                  const grdR = ctx.createLinearGradient(fcx + avgFaceW * w * 0.5, 0, fcx + avgFaceW * w * 0.15, 0);
                   grdR.addColorStop(0, color); grdR.addColorStop(1, "rgba(0,0,0,0)");
-                  ctx.fillStyle = grdR; ctx.fillRect(w * 0.7, h * 0.3, w * 0.3, h * 0.4);
+                  ctx.fillStyle = grdR; ctx.fillRect(fcx + avgFaceW * w * 0.15, fcy - avgFaceH * h * 0.3, cheekW, avgFaceH * h * 0.6);
                 }
-                // Forehead: top gradient
+                // Forehead: gradient above face center
                 if (portrait.foreheadAdjust !== 0) {
                   const alpha = clamp(Math.abs(portrait.foreheadAdjust) * 0.003, 0, 0.3);
                   const color = portrait.foreheadAdjust > 0 ? `rgba(255,255,255,${alpha})` : `rgba(0,0,0,${alpha})`;
-                  const grd = ctx.createLinearGradient(0, 0, 0, h * 0.35);
+                  const topY = fcy - avgFaceH * h * 0.5;
+                  const grd = ctx.createLinearGradient(0, topY, 0, topY + avgFaceH * h * 0.3);
                   grd.addColorStop(0, color); grd.addColorStop(1, "rgba(0,0,0,0)");
-                  ctx.fillStyle = grd; ctx.fillRect(0, 0, w, h * 0.35);
+                  ctx.fillStyle = grd; ctx.fillRect(fcx - avgFaceW * w * 0.5, topY, avgFaceW * w, avgFaceH * h * 0.3);
                 }
                 ctx.restore();
               }
@@ -1545,6 +1868,8 @@
       const [curvePoints, setCurvePoints] = useState(DEFAULT_CURVE.map(p => ({...p})));
       const [customImage, setCustomImage] = useState(null);
       const [isLoading, setIsLoading] = useState(false);
+      const [faceRegions, setFaceRegions] = useState([]);
+      const [detectingFaces, setDetectingFaces] = useState(false);
 
       // PWA Install
       const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -1648,6 +1973,8 @@
                 watermark={watermark} zoom={zoom} neuralDenoise={neuralDenoise} noiseLevel={noiseLevel}
                 grain={grain} portrait={portrait} setZoom={setZoom} customImage={customImage} setCustomImage={setCustomImage}
                 curvePoints={curvePoints} t={t}
+                faceRegions={faceRegions} setFaceRegions={setFaceRegions}
+                detectingFaces={detectingFaces} setDetectingFaces={setDetectingFaces}
               />
             </section>
 
@@ -1879,9 +2206,19 @@
                     <div className="group">
                       <div className="group-title">
                         <span>{t("portrait")}</span>
+                        {portrait.beautyMode && (
+                          <span className={`face-indicator ${detectingFaces ? "" : faceRegions.length > 0 ? "detected" : "none"}`}>
+                            {detectingFaces
+                              ? t("detectingFace")
+                              : faceRegions.length > 0
+                                ? `${faceRegions.length} ${t("faceCount")} ✓`
+                                : t("noFaceDetected")}
+                          </span>
+                        )}
                         <button className="reset-btn" onClick={() => setPortrait({beautyMode:false,skinSmoothing:0,eyeBrightening:0,faceSlimming:0,teethWhitening:0,redEyeRemoval:false,portraitBlur:0,skinToneWarmth:0,chinAdjust:0,cheekAdjust:0,noseThinning:0,lipEnhance:0,foreheadAdjust:0,faceBrightening:0,jawlineDefine:0})}>{t("reset")}</button>
                       </div>
                       <Toggle label={t("beautyMode")} value={portrait.beautyMode} onChange={(v) => setPortrait(p => ({...p, beautyMode: v}))} />
+                      <Tooltip text={t("tipFaceDetect")} />
                       {portrait.beautyMode && <>
                         <Slider label={t("skinSmoothing")} value={portrait.skinSmoothing} min={0} max={100} step={1}
                           onChange={(v) => setPortrait(p => ({...p, skinSmoothing: v}))} tip={t("tipSkinSmooth")} />
@@ -2048,6 +2385,7 @@
                         motionBlur={motionBlur} watermark={watermark} curvePoints={curvePoints} zoom={zoom}
                         neuralDenoise={neuralDenoise} noiseLevel={noiseLevel} grain={grain} portrait={portrait}
                         customImage={customImage} isLoading={isLoading} setIsLoading={setIsLoading} t={t}
+                        faceRegions={faceRegions}
                       />
                     </div>
                   </div>
