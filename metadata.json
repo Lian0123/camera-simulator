@@ -1,0 +1,50 @@
+{
+  "title": "Pro Camera Simulator — Advanced",
+  "description": "專業相機模擬器 | Professional web-based camera simulator with real-time photography settings",
+  "url": "https://camera-simulator.example.com/",
+  "language": ["zh-Hant", "en", "ja"],
+  "type": "WebApplication",
+  "category": "Photography & Utilities",
+  "features": [
+    "即時光圈、快門、ISO 模擬 | Real-time aperture, shutter, ISO simulation",
+    "焦距和景深設置 | Focal length and depth of field settings",
+    "漏光和降噪效果 | Light leak and denoise effects",
+    "曲線調整和水印 | Curve adjustment and watermark",
+    "多語言支援 | Multi-language support",
+    "黑白主題切換 | Dark/Light theme toggle",
+    "本地圖片上傳 | Local image upload",
+    "實時預覽 | Real-time preview"
+  ],
+  "keywords": [
+    "相機模擬器",
+    "Camera Simulator",
+    "攝影模擬",
+    "Photography Simulator",
+    "光圈模擬",
+    "Aperture Simulator",
+    "快門速度",
+    "Shutter Speed",
+    "ISO感光度",
+    "焦距",
+    "Focal Length",
+    "景深",
+    "Depth of Field",
+    "漏光效果",
+    "Light Leak",
+    "降噪",
+    "Denoise",
+    "相機效果",
+    "Camera Effects"
+  ],
+  "author": "Pro Camera Simulator Team",
+  "created": "2026-01-31",
+  "updated": "2026-01-31",
+  "version": "0.0.4",
+  "license": "MIT",
+  "repository": "https://github.com/example/camera-simulator",
+  "social": {
+    "github": "https://github.com/example/camera-simulator",
+    "twitter": "https://twitter.com/example",
+    "email": "support@camera-simulator.example.com"
+  }
+}

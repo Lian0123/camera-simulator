@@ -1,0 +1,66 @@
+name: Deploy Camera Simulator
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Validate HTML
+        run: |
+          npm install -g html-validate
+          html-validate index.html || true
+      
+      - name: Check file size
+        run: |
+          FILE_SIZE=$(stat -f%z index.html 2>/dev/null || stat -c%s index.html)
+          echo "File size: $FILE_SIZE bytes"
+          if [ $FILE_SIZE -gt 500000 ]; then
+            echo "Warning: File size exceeds 500KB"
+          fi
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: camera-simulator
+          path: index.html
+          retention-days: 30
+
+  pages:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: '.'
+      
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2

@@ -1,0 +1,32 @@
+{
+  "name": "pro-camera-simulator",
+  "version": "0.0.3",
+  "description": "An advanced camera simulator with professional photography parameters and real-time preview effects",
+  "type": "module",
+  "main": "index.html",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "serve": "python3 -m http.server 8000"
+  },
+  "keywords": [
+    "camera",
+    "simulator",
+    "photography",
+    "photo-editing",
+    "react",
+    "canvas"
+  ],
+  "author": "Camera Simulator Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lianyongli/camera-simulator-1"
+  },
+  "bugs": {
+    "url": "https://github.com/lianyongli/camera-simulator-1/issues"
+  },
+  "homepage": "https://github.com/lianyongli/camera-simulator-1#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

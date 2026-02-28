@@ -1,0 +1,25 @@
+# Pro Camera Simulator - robots.txt
+# Allow all search engines to crawl the site
+
+User-agent: *
+Allow: /
+Disallow: 
+
+# Specific rules for major search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+# Sitemap location
+Sitemap: https://lian0123.github.io/camera-simulator/sitemap.xml
+
+# Crawl delay (optional - adjust as needed)
+Crawl-delay: 0

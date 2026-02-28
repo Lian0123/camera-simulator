@@ -1,0 +1,2049 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <title>Pro Camera Simulator — 專業相機模擬器 | 光圈快門ISO曲線人像處理即時預覽</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="Pro Camera Simulator 是一款專業免費的線上相機模擬器，提供即時光圈、快門、ISO、白平衡、焦距、景深、漏光、降噪、人像美顏（磨皮、瘦臉、亮眼、美白牙齒、去紅眼、下巴調整、臉頰比例、瘦鼻、嘴唇調整、額頭調整、面部提亮、下顎線條）等完整攝影模擬與後製功能。支援繁體中文、英文、日文多語言，包含曲線調整、分離色調、顆粒模擬、水印與 PWA 安裝。" />
+  <meta name="keywords" content="相機模擬器,Camera Simulator,攝影模擬,光圈,快門速度,ISO,白平衡,焦距,景深,相機效果,漏光效果,降噪,水印,曲線調整,人像美顏,磨皮,瘦臉,亮眼,美白牙齒,去紅眼,下巴調整,臉頰比例,瘦鼻,嘴唇調整,額頭調整,面部提亮,下顎線條,PWA,免費攝影工具" />
+  <meta name="author" content="Lian0123" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+  <meta name="googlebot" content="index, follow" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Pro Camera Simulator" />
+  <meta property="og:title" content="Pro Camera Simulator — 專業相機模擬器 | 免費線上攝影模擬工具" />
+  <meta property="og:description" content="免費的專業相機模擬器，即時預覽光圈、快門、ISO、焦距、人像美顏等完整攝影設置。支援中英日三語。" />
+  <meta property="og:url" content="https://lian0123.github.io/camera-simulator/" />
+  <meta property="og:locale" content="zh_TW" />
+  <meta property="og:locale:alternate" content="en_US" />
+  <meta property="og:locale:alternate" content="ja_JP" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Pro Camera Simulator — 專業相機模擬器" />
+  <meta name="twitter:description" content="免費專業相機模擬器，即時預覽光圈、快門、ISO、人像美顏等完整攝影設置。" />
+
+  <!-- PWA / Mobile -->
+  <meta name="theme-color" content="#4f8cff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="CameraSim" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="application-name" content="Pro Camera Simulator" />
+  <meta name="msapplication-TileColor" content="#4f8cff" />
+
+  <!-- Hreflang -->
+  <link rel="alternate" hreflang="zh-Hant" href="https://lian0123.github.io/camera-simulator/?lang=zh-Hant" />
+  <link rel="alternate" hreflang="en" href="https://lian0123.github.io/camera-simulator/?lang=en" />
+  <link rel="alternate" hreflang="ja" href="https://lian0123.github.io/camera-simulator/?lang=ja" />
+  <link rel="alternate" hreflang="x-default" href="https://lian0123.github.io/camera-simulator/" />
+
+  <link rel="canonical" href="https://lian0123.github.io/camera-simulator/" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%234f8cff' width='100' height='100' rx='20'/><circle cx='50' cy='50' r='22' fill='none' stroke='%23fff' stroke-width='4' opacity='0.6'/><circle cx='50' cy='50' r='8' fill='%23fff' opacity='0.4'/></svg>" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect fill='%234f8cff' width='180' height='180' rx='36'/%3E%3Ccircle cx='90' cy='90' r='40' fill='none' stroke='%23fff' stroke-width='6' opacity='0.9'/%3E%3Ccircle cx='90' cy='90' r='14' fill='%23fff' opacity='0.5'/%3E%3C/svg%3E" />
+
+  <!-- React Production & Babel -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #080a12; --card: #0e1120; --accent: #4f8cff; --accent2: #7c5dff;
+      --text: #f0f2ff; --muted: #8b92b0; --border: rgba(79,140,255,0.1);
+      --glass: rgba(255,255,255,0.03); --radius: 12px; --fast: 0.15s; --med: 0.25s;
+    }
+
+    /* ===== Light Theme ===== */
+    body.theme-light {
+      --bg: #f4f6f9; --card: #ffffff; --accent: #2563eb; --accent2: #7c3aed;
+      --text: #1a1a2e; --muted: #64748b; --border: rgba(0,0,0,0.08);
+      --glass: rgba(0,0,0,0.02);
+    }
+    body.theme-light { background: var(--bg) !important; }
+    body.theme-light .card { box-shadow: 0 1px 8px rgba(0,0,0,0.06); border-color: var(--border); }
+    body.theme-light .group { background: #f8fafc; border-color: var(--border); }
+    body.theme-light .tabs { background: rgba(0,0,0,0.03); }
+    body.theme-light input[type=text], body.theme-light select { background: #fff; border-color: var(--border); color: var(--text); }
+    body.theme-light input[type=range]::-webkit-slider-thumb { background: linear-gradient(135deg, #e0e7ff, var(--accent)); }
+    body.theme-light .tag { border-color: var(--border); color: var(--muted); }
+    body.theme-light .tag.active { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
+    body.theme-light .aspect-btn { border-color: var(--border); color: var(--muted); }
+    body.theme-light .aspect-btn.active { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
+    body.theme-light .tab { color: var(--muted); }
+    body.theme-light .tab.active { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
+    body.theme-light .preview-shell { background: #f0f2f5; }
+    body.theme-light .frame { border-color: rgba(0,0,0,0.1); }
+    body.theme-light .curve-box { background: #f8fafc; border-color: var(--border); }
+    body.theme-light .curve-grid { background: rgba(37,99,235,0.03); border-color: rgba(0,0,0,0.08); }
+    body.theme-light .badge { background: rgba(37,99,235,0.08); border-color: rgba(37,99,235,0.15); color: var(--accent); }
+    body.theme-light .muted-btn { border-color: var(--border); color: var(--muted); background: #fff; }
+    body.theme-light .github-btn { background: #24292e; color: #fff; }
+    body.theme-light .github-btn:hover { background: #1b1f23; }
+    body.theme-light .tooltip-icon { background: rgba(0,0,0,0.06); color: var(--muted); }
+
+    /* ===== Base ===== */
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", sans-serif;
+      background: var(--bg); color: var(--text);
+      -webkit-font-smoothing: antialiased; line-height: 1.5;
+    }
+
+    /* ===== App Layout ===== */
+    .app { max-width: 1600px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; min-height: 100vh; }
+    .header { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 4px 0; }
+    .brand { display: flex; gap: 10px; align-items: center; min-width: 0; flex-shrink: 1; }
+    .brand > div:last-child { min-width: 0; }
+    .logo { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .logo svg { width: 18px; height: 18px; fill: #fff; }
+    .title { font-weight: 700; font-size: 15px; letter-spacing: 0.04em; white-space: nowrap; }
+    .subtitle { font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .header-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+
+    .layout { display: grid; grid-template-columns: 1.6fr 1fr; gap: 14px; }
+    @media (max-width: 1200px) { .layout { grid-template-columns: 1.4fr 1fr; } }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .controls { max-height: 55vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+      .panel-offset-ctrl { display: none !important; }
+    }
+    @media (min-width: 901px) {
+      .layout > section:first-child { position: sticky; top: 16px; align-self: start; }
+      .controls-panel { margin-top: var(--panel-offset, 0px); transition: margin-top 0.25s ease; align-self: start; }
+    }
+    @media (max-width: 600px) {
+      .app { padding: 10px; }
+      .header { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .subtitle { white-space: normal; overflow: visible; }
+      .header-actions { width: 100%; justify-content: flex-start; gap: 6px; flex-wrap: wrap; }
+      .header-actions .github-btn span { display: none; }
+      .preview-shell { padding: 8px; }
+      .grid { grid-template-columns: 1fr !important; }
+    }
+
+    /* ===== Cards ===== */
+    .card {
+      background: var(--card); border-radius: var(--radius); padding: 14px;
+      border: 1px solid var(--border); position: relative; overflow: hidden;
+    }
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 8px; }
+    .card-title { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; }
+    .badge {
+      background: rgba(79,140,255,0.1); padding: 4px 10px; border-radius: 999px;
+      font-size: 11px; color: var(--accent); border: 1px solid rgba(79,140,255,0.15);
+      white-space: nowrap;
+    }
+
+    /* ===== Preview ===== */
+    .preview-shell { background: rgba(0,0,0,0.3); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .preview-top { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); flex-wrap: wrap; gap: 6px; }
+    .led { width: 7px; height: 7px; border-radius: 50%; background: #3cff9b; box-shadow: 0 0 6px rgba(60,255,155,0.4); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
+    .aspect-toggle { display: inline-flex; gap: 4px; }
+    .aspect-btn {
+      padding: 4px 8px; border-radius: 999px; background: transparent;
+      border: 1px solid rgba(255,255,255,0.06); color: var(--muted);
+      cursor: pointer; transition: all var(--fast); font-size: 11px;
+    }
+    .aspect-btn.active { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border-color: transparent; }
+
+    .frame {
+      border-radius: 10px; overflow: hidden; background: #000;
+      border: 1px solid rgba(255,255,255,0.05); position: relative;
+    }
+    .img-wrap { position: relative; width: 100%; padding-top: 66.67%; overflow: hidden; }
+    .img-wrap.a-3-2 { padding-top: 66.67%; }
+    .img-wrap.a-4-3 { padding-top: 75%; }
+    .img-wrap.a-16-9 { padding-top: 56.25%; }
+    .img-wrap.a-1-1 { padding-top: 100%; }
+    .preview-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; will-change: transform, filter; }
+    .overlay { position: absolute; inset: 0; pointer-events: none; }
+
+    .vignette { position: absolute; inset: -10%; background: radial-gradient(circle, transparent 0, rgba(0,0,0,0.85) 70%); mix-blend-mode: multiply; transition: opacity var(--med); }
+    .dust, .scratch, .haze, .bokeh-overlay, .waterdrop, .lightleak { position: absolute; inset: 0; mix-blend-mode: screen; opacity: 0; transition: opacity var(--med); }
+    .dust.vis { opacity: 0.8; background: radial-gradient(circle at 20% 25%, rgba(120,100,80,0.35), transparent 35%), radial-gradient(circle at 65% 45%, rgba(100,80,60,0.3), transparent 40%), radial-gradient(circle at 80% 20%, rgba(110,90,70,0.25), transparent 38%); mix-blend-mode: multiply; }
+    .scratch.vis { opacity: 0.6; background: repeating-linear-gradient(35deg, rgba(220,220,220,0.4), rgba(220,220,220,0.4) 1.5px, transparent 1.5px, transparent 7px), repeating-linear-gradient(-25deg, rgba(200,200,200,0.3), rgba(200,200,200,0.3) 1px, transparent 1px, transparent 9px); mix-blend-mode: overlay; }
+    .haze.vis { opacity: 0.7; background: linear-gradient(180deg, rgba(220,220,220,0.2) 0%, rgba(150,150,150,0.1) 40%, transparent 100%); mix-blend-mode: screen; }
+    .bokeh-overlay.vis { opacity: 0.6; background: radial-gradient(circle at 25% 35%, rgba(200,200,255,0.15), transparent 40%), radial-gradient(circle at 75% 60%, rgba(255,200,200,0.12), transparent 45%); mix-blend-mode: screen; }
+    .waterdrop.vis { opacity: 1; background: radial-gradient(circle at 35% 35%, rgba(210,230,255,0.9), transparent 75%), radial-gradient(circle at 70% 60%, rgba(200,220,255,0.7), transparent 70%); mix-blend-mode: overlay; }
+    .motion-blur { position: absolute; inset: 0; backdrop-filter: blur(0px); transition: backdrop-filter var(--med); }
+    .motion-blur.active { backdrop-filter: blur(3px); }
+
+    .grid-line { position: absolute; background: rgba(255,255,255,0.3); }
+    .grid-line.h { height: 1px; width: 100%; }
+    .grid-line.v { width: 1px; height: 100%; }
+
+    .flash-overlay { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; transition: opacity 0.1s linear; }
+    .focus-ring { position: absolute; width: 56px; height: 56px; border: 2px solid rgba(79,140,255,0.8); border-radius: 50%; transform: translate(-50%,-50%); pointer-events: none; animation: focusPulse 0.6s ease-out forwards; }
+    @keyframes focusPulse { from { opacity: 1; transform: translate(-50%,-50%) scale(0.5); } to { opacity: 0; transform: translate(-50%,-50%) scale(1.2); } }
+
+    /* ===== Controls ===== */
+    .controls { display: flex; flex-direction: column; gap: 10px; }
+    .controls::-webkit-scrollbar { width: 5px; }
+    .controls::-webkit-scrollbar-thumb { background: rgba(79,140,255,0.25); border-radius: 3px; }
+    .tabs { display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--glass); }
+    .tab {
+      padding: 6px 14px; border-radius: 999px; background: transparent; border: none;
+      color: var(--muted); cursor: pointer; transition: all var(--fast); font-size: 12px; font-weight: 500;
+    }
+    .tab.active { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
+    .tab:hover:not(.active) { color: var(--accent); }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    @media (max-width: 1100px) and (min-width: 901px) { .grid { grid-template-columns: 1fr; } }
+
+    .group {
+      background: var(--glass); padding: 10px; border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .group-title { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .label-row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+    .label-val { font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 500; font-size: 11px; }
+
+    input[type=range] {
+      -webkit-appearance: none; appearance: none; width: 100%; height: 5px;
+      background: linear-gradient(90deg, transparent, rgba(79,140,255,0.18), transparent);
+      border-radius: 999px; outline: none; border: none; cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+      background: linear-gradient(135deg, #fff, var(--accent));
+      box-shadow: 0 0 0 4px rgba(79,140,255,0.1), 0 2px 6px rgba(0,0,0,0.3);
+      cursor: grab; transition: transform 0.15s;
+    }
+    input[type=range]::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(1.15); }
+    input[type=range]::-moz-range-thumb {
+      width: 14px; height: 14px; border-radius: 50%; border: none;
+      background: linear-gradient(135deg, #fff, var(--accent));
+      box-shadow: 0 0 0 4px rgba(79,140,255,0.1), 0 2px 6px rgba(0,0,0,0.3);
+      cursor: grab;
+    }
+    input[type=range]::-moz-range-track { background: linear-gradient(90deg, transparent, rgba(79,140,255,0.18), transparent); border: none; border-radius: 999px; }
+
+    select, input[type=text] {
+      width: 100%; padding: 7px 10px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.03);
+      color: var(--text); font-size: 12px; transition: all 0.2s; outline: none;
+    }
+    input[type=text]:focus, select:focus { border-color: rgba(79,140,255,0.4); box-shadow: 0 0 0 2px rgba(79,140,255,0.1); }
+
+    .tag-row { display: flex; gap: 5px; flex-wrap: wrap; }
+    .tag {
+      padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.06);
+      background: transparent; color: var(--muted); cursor: pointer; transition: all var(--fast); font-size: 11px;
+    }
+    .tag:hover { border-color: rgba(79,140,255,0.25); color: var(--accent); }
+    .tag.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff;
+      border-color: transparent; box-shadow: 0 2px 8px rgba(79,140,255,0.25);
+    }
+
+    /* ===== Curve Editor ===== */
+    .curve-box {
+      height: 150px; border-radius: 8px; border: 1px solid var(--border);
+      position: relative; background: rgba(0,0,0,0.2); overflow: hidden;
+    }
+    .curve-grid {
+      position: absolute; inset: 6px; border-radius: 6px;
+      border: 1px solid rgba(79,140,255,0.06); background: rgba(79,140,255,0.01);
+    }
+    .curve-canvas { position: absolute; inset: 6px; }
+    .curve-handle {
+      position: absolute; width: 10px; height: 10px; border-radius: 50%;
+      background: linear-gradient(135deg, #fff, var(--accent)); border: 2px solid rgba(0,0,0,0.5);
+      transform: translate(-50%,-50%); cursor: grab; transition: box-shadow var(--fast);
+      box-shadow: 0 1px 4px rgba(79,140,255,0.3); z-index: 2;
+    }
+    .curve-handle:hover { box-shadow: 0 0 0 3px rgba(79,140,255,0.2), 0 2px 6px rgba(79,140,255,0.4); }
+    .curve-handle:active { cursor: grabbing; }
+
+    /* ===== Buttons ===== */
+    .btn {
+      padding: 8px 14px; border-radius: 8px; border: none;
+      background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff;
+      cursor: pointer; transition: all var(--fast); font-size: 12px; font-weight: 500;
+    }
+    .btn:hover { box-shadow: 0 4px 16px rgba(79,140,255,0.35); transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+    .muted-btn {
+      padding: 6px 10px; border-radius: 8px; background: var(--glass);
+      border: 1px solid var(--border); color: var(--muted); cursor: pointer;
+      transition: all var(--fast); font-size: 11px;
+    }
+    .muted-btn:hover { border-color: rgba(79,140,255,0.3); color: var(--accent); }
+    .reset-btn {
+      padding: 3px 8px; font-size: 10px; border-radius: 6px;
+      border: 1px solid rgba(79,140,255,0.2); background: rgba(79,140,255,0.06);
+      color: var(--accent); cursor: pointer; transition: all var(--fast);
+    }
+    .reset-btn:hover { background: rgba(79,140,255,0.12); }
+
+    /* ===== GitHub Button ===== */
+    .github-btn {
+      display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
+      border-radius: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text); text-decoration: none; font-size: 12px; font-weight: 500;
+      transition: all var(--fast);
+    }
+    .github-btn:hover { background: rgba(255,255,255,0.14); transform: translateY(-1px); }
+    .github-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+    /* ===== Tooltip ===== */
+    .tooltip-wrap { position: relative; display: inline-flex; }
+    .tooltip-icon {
+      width: 16px; height: 16px; border-radius: 50%; background: rgba(79,140,255,0.1);
+      color: var(--accent); font-size: 9px; display: inline-flex; align-items: center;
+      justify-content: center; cursor: help; font-weight: 700; flex-shrink: 0;
+    }
+    .tooltip-text {
+      visibility: hidden; opacity: 0; position: absolute; bottom: 120%; left: 50%;
+      transform: translateX(-50%); background: #1a1a2e; color: #e0e0e0; padding: 6px 10px;
+      border-radius: 6px; font-size: 11px; white-space: nowrap; z-index: 100;
+      transition: opacity 0.2s; pointer-events: none; max-width: 240px; white-space: normal;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+    .tooltip-wrap:hover .tooltip-text { visibility: visible; opacity: 1; }
+
+    .small { font-size: 11px; color: var(--muted); }
+    .preview-info { background: rgba(255,255,255,0.03); padding: 5px 10px; border-radius: 6px; font-size: 11px; color: var(--muted); }
+    footer { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; margin-top: 4px; flex-wrap: wrap; gap: 8px; }
+
+    @keyframes lightleakPulse { 0%,100% { opacity: 0.7; } 50% { opacity: 1; } }
+
+    /* ===== PWA Install Banner ===== */
+    .pwa-install-banner {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; padding: 12px 24px; border-radius: 12px;
+      display: flex; align-items: center; gap: 12px; z-index: 1000;
+      box-shadow: 0 8px 32px rgba(79,140,255,0.4); font-size: 13px;
+      animation: slideUp 0.4s ease-out;
+    }
+    .pwa-install-banner button { padding: 6px 16px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 12px; }
+    .pwa-install-btn { background: #fff; color: var(--accent); }
+    .pwa-dismiss-btn { background: rgba(255,255,255,0.2); color: #fff; }
+    @keyframes slideUp { from { transform: translateX(-50%) translateY(100px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+  </style>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('SW registered:', reg.scope))
+          .catch(err => console.warn('SW registration failed:', err));
+      });
+    }
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- SVG Filters for Curve (applied to preview image) -->
+  <svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+    <defs>
+      <filter id="curveFilter" color-interpolation-filters="sRGB">
+        <feComponentTransfer>
+          <feFuncR id="curveR" type="table" tableValues="0 1" />
+          <feFuncG id="curveG" type="table" tableValues="0 1" />
+          <feFuncB id="curveB" type="table" tableValues="0 1" />
+        </feComponentTransfer>
+      </filter>
+    </defs>
+  </svg>
+
+  <script type="text/babel">
+    const { useState, useRef, useEffect, useMemo, useCallback } = React;
+
+    /* ========================= i18n ========================= */
+    const i18n = {
+      "zh-Hant": {
+        title: "PRO CAMERA SIMULATOR",
+        subtitle: "專業相機模擬器 — 即時預覽光圈、快門、ISO、曲線等攝影參數",
+        livePreview: "即時預覽", previewDesc: "模擬鏡頭、感光元件、色彩與後製效果", controls: "控制面板",
+        controlsDesc: "調整拍攝與後製參數", shooting: "拍攝設定", editing: "後製設定",
+        exposure: "曝光", aperture: "光圈", shutterSpeed: "快門速度", iso: "ISO 感光度",
+        ev: "EV 曝光補償", whiteBalance: "白平衡 (K)", brandColor: "品牌色彩",
+        sensor: "感光元件", lensOptics: "鏡頭 & 景深", focalLength: "焦距 (mm)",
+        vignette: "暗角", distortion: "畸變",
+        aberration: "色散", bokeh: "光斑 / 散景", megapixels: "像素模擬 (MP)",
+        flashSettings: "閃光燈設定", flashBrightness: "閃光亮度", flashTime: "閃光時間",
+        enableFlash: "啟用閃光", testFlash: "測試閃光", motionBlur: "動態模糊",
+        compositionGuide: "構圖輔助線", off: "關閉", thirds: "三分法",
+        golden: "黃金分割", diagonal: "對角線", globalTone: "全局色調",
+        postBrightness: "後製亮度", highlights: "高光", shadows: "陰影",
+        atmosphere: "氛圍感", displayFilm: "顯示 & 濾鏡", displaySim: "面板模擬",
+        filterType: "濾鏡效果", toneAdjust: "色調調整", warmth: "色溫 (冷←→暖)",
+        saturation: "飽和度", contrast: "對比度", detailCurve: "細節 & 曲線",
+        sharpen: "銳化", noiseReduction: "降噪", curveAdjust: "曲線調整",
+        resetCurve: "重置曲線", lightLeak: "漏光", lightLeakIntensity: "漏光強度",
+        lightLeakColor: "漏光顏色", lightLeakPos: "漏光位置（可多選）",
+        noise: "雜訊", noiseIntensity: "雜訊強度", neuralDenoise: "神經消噪",
+        watermark: "浮水印", watermarkText: "水印文字", watermarkOpacity: "水印透明度",
+        watermarkSize: "水印大小", watermarkPos: "水印位置",
+        exportSection: "匯出", exportPNG: "匯出 PNG", exportJSON: "匯出設定",
+        reset: "重置", interactiveBadge: "互動式預覽", upload: "上傳圖片", resetImg: "重設圖片",
+        digitalZoom: "數位變焦", triggerFlash: "觸發閃光",
+        none: "無", bw: "黑白", vintage: "復古", hdr: "HDR", cinematic: "電影",
+        oled: "OLED", qled: "QLED", miniled: "MiniLED",
+        topLeft: "左上", topCenter: "上中", topRight: "右上",
+        leftCenter: "左中", center: "中心", rightCenter: "右中",
+        bottomLeft: "左下", bottomCenter: "下中", bottomRight: "右下",
+        // 新功能
+        metering: "測光模式", spot: "點測光", centerWeighted: "中央重點", evaluative: "權衡測光",
+        driveMode: "連拍模式", single: "單拍", contLow: "低速連拍", contHigh: "高速連拍", timer: "計時器",
+        imageStab: "影像穩定", colorSpace: "色彩空間",
+        clarity: "清晰度", dehaze: "去霧", texture: "紋理",
+        splitToning: "分離色調", hlHue: "高光色相", hlSat: "高光飽和度",
+        shHue: "陰影色相", shSat: "陰影飽和度",
+        grain: "顆粒", grainAmount: "顆粒量", grainSize: "顆粒大小",
+        defects: "影像缺陷", dust: "入塵", scratch: "刮痕", haze: "霾化", waterdrop: "沾水",
+        // Tooltips
+        tipAperture: "光圈值越小，進光量越大、景深越淺",
+        tipShutter: "快門速度影響曝光時間與動態模糊",
+        tipISO: "ISO 越高感光度越好，但雜訊也越多",
+        tipEV: "曝光補償，正值增亮、負值減暗",
+        tipWB: "色溫調整，低值偏藍、高值偏黃",
+        tipCurve: "拖曳節點調整亮度曲線，即時套用於預覽圖片",
+        tipClarity: "增強中間調對比度，使影像更清晰",
+        tipDehaze: "去除大氣霧霾效果，增加清晰度與對比",
+        tipTexture: "增強或減弱細節紋理",
+        tipSplitTone: "對高光和陰影分別加入色調",
+        tipGrain: "模擬底片顆粒效果",
+        githubLink: "GitHub",
+        portrait: "人像處理", skinSmoothing: "磨皮柔膚", skinSmoothingIntensity: "磨皮強度",
+        eyeBrightening: "亮眼", eyeBrighteningIntensity: "亮眼強度",
+        faceSlimming: "瘦臉", faceSlimmingIntensity: "瘦臉強度",
+        teethWhitening: "美白牙齒", teethWhiteningIntensity: "美白強度",
+        redEyeRemoval: "去紅眼", beautyMode: "美顏模式",
+        portraitBlur: "背景虛化", portraitBlurIntensity: "虛化強度",
+        skinTone: "膚色調整", skinToneWarmth: "膚色色溫",
+        tipSkinSmooth: "柔化皮膚紋理，減少瑕疵，保留五官細節",
+        tipEyeBright: "增強眼睛亮度和反光，使眼睛更有神",
+        tipFaceSlim: "微調臉部輪廓，產生瘦臉效果",
+        tipTeethWhite: "亮白牙齒色調",
+        tipRedEye: "移除閃光燈造成的紅眼效果",
+        tipPortraitBlur: "模擬大光圈背景虛化效果",
+        tipSkinTone: "調整膚色冷暖色調",
+        chinAdjust: "下巴調整", chinAdjustIntensity: "下巴強度",
+        cheekAdjust: "臉頰比例", cheekAdjustIntensity: "臉頰強度",
+        noseThinning: "瘦鼻", noseThinningIntensity: "瘦鼻強度",
+        lipEnhance: "嘴唇調整", lipEnhanceIntensity: "嘴唇強度",
+        foreheadAdjust: "額頭調整", foreheadAdjustIntensity: "額頭強度",
+        faceBrightening: "面部提亮", faceBrighteningIntensity: "提亮強度",
+        jawlineDefine: "下顎線條", jawlineDefineIntensity: "下顎強度",
+        tipChinAdjust: "調整下巴長度與突出程度",
+        tipCheekAdjust: "調整臉頰寬度與比例",
+        tipNoseThinning: "微調鼻部寬度，使鼻型更纖細",
+        tipLipEnhance: "調整嘴唇飽滿度與色澤",
+        tipForeheadAdjust: "調整額頭比例大小",
+        tipFaceBrightening: "提亮面部膚色，增加光澤感",
+        tipJawlineDefine: "強化下顎線條，使輪廓更分明",
+        panelOffset: "面板偏移", tipPanelOffset: "調整控制面板的垂直位置，避免調參時擋住預覽圖片",
+        installApp: "安裝應用", installPrompt: "安裝到手機桌面", dismiss: "關閉",
+        footerSource: "預設圖片：default.jpeg（可上傳自訂圖片）",
+        footerNote: "預覽使用 SVG 濾鏡即時套用曲線；匯出套用完整像素處理。",
+        enabled: "已啟用", disabled: "未啟用",
+        crossProcess: "Cross Process", bleachBypass: "Bleach Bypass", lomo: "Lomo",
+        filmPortra: "Portra 風格", filmTriX: "Tri-X 風格",
+        warmFilm: "暖色底片", coolTone: "冷色調", moody: "陰鬱",
+        dreamy: "夢幻", noir: "黑色電影", fade: "褪色",
+        vibrant: "鮮豔", retro: "復古膠片",
+      },
+      en: {
+        title: "PRO CAMERA SIMULATOR",
+        subtitle: "Advanced Camera Simulator — Real-time preview of aperture, shutter, ISO, curves & more",
+        livePreview: "Live Preview", previewDesc: "Simulate lens, sensor, color & post-processing effects", controls: "Controls",
+        controlsDesc: "Adjust shooting & post-processing parameters", shooting: "Shooting", editing: "Editing",
+        exposure: "Exposure", aperture: "Aperture", shutterSpeed: "Shutter Speed", iso: "ISO Sensitivity",
+        ev: "EV Compensation", whiteBalance: "White Balance (K)", brandColor: "Brand Color",
+        sensor: "Sensor", lensOptics: "Lens & DOF", focalLength: "Focal Length (mm)",
+        vignette: "Vignette", distortion: "Distortion",
+        aberration: "Chromatic Aberration", bokeh: "Bokeh", megapixels: "Pixel Simulation (MP)",
+        flashSettings: "Flash Settings", flashBrightness: "Flash Brightness", flashTime: "Flash Duration",
+        enableFlash: "Enable Flash", testFlash: "Test Flash", motionBlur: "Motion Blur",
+        compositionGuide: "Composition Guide", off: "Off", thirds: "Rule of Thirds",
+        golden: "Golden Ratio", diagonal: "Diagonal", globalTone: "Global Tone",
+        postBrightness: "Post Brightness", highlights: "Highlights", shadows: "Shadows",
+        atmosphere: "Atmosphere", displayFilm: "Display & Filters", displaySim: "Display Simulation",
+        filterType: "Filter Effect", toneAdjust: "Tone Adjustment", warmth: "Warmth (Cool←→Warm)",
+        saturation: "Saturation", contrast: "Contrast", detailCurve: "Detail & Curve",
+        sharpen: "Sharpen", noiseReduction: "Noise Reduction", curveAdjust: "Curve Adjustment",
+        resetCurve: "Reset Curve", lightLeak: "Light Leak", lightLeakIntensity: "Light Leak Intensity",
+        lightLeakColor: "Light Leak Color", lightLeakPos: "Light Leak Position (Multi-select)",
+        noise: "Noise", noiseIntensity: "Noise Intensity", neuralDenoise: "Neural Denoise",
+        watermark: "Watermark", watermarkText: "Watermark Text", watermarkOpacity: "Watermark Opacity",
+        watermarkSize: "Watermark Size", watermarkPos: "Watermark Position",
+        exportSection: "Export", exportPNG: "Export PNG", exportJSON: "Export Settings",
+        reset: "Reset", interactiveBadge: "Interactive Preview", upload: "Upload", resetImg: "Reset Image",
+        digitalZoom: "Digital Zoom", triggerFlash: "Trigger Flash",
+        none: "None", bw: "B&W", vintage: "Vintage", hdr: "HDR", cinematic: "Cinematic",
+        oled: "OLED", qled: "QLED", miniled: "MiniLED",
+        topLeft: "Top-Left", topCenter: "Top-Center", topRight: "Top-Right",
+        leftCenter: "Left-Center", center: "Center", rightCenter: "Right-Center",
+        bottomLeft: "Bottom-Left", bottomCenter: "Bottom-Center", bottomRight: "Bottom-Right",
+        metering: "Metering Mode", spot: "Spot", centerWeighted: "Center-Weighted", evaluative: "Evaluative",
+        driveMode: "Drive Mode", single: "Single", contLow: "Cont. Low", contHigh: "Cont. High", timer: "Timer",
+        imageStab: "Image Stabilization", colorSpace: "Color Space",
+        clarity: "Clarity", dehaze: "Dehaze", texture: "Texture",
+        splitToning: "Split Toning", hlHue: "Highlight Hue", hlSat: "Highlight Sat.",
+        shHue: "Shadow Hue", shSat: "Shadow Sat.",
+        grain: "Grain", grainAmount: "Grain Amount", grainSize: "Grain Size",
+        defects: "Image Defects", dust: "Dust", scratch: "Scratch", haze: "Haze", waterdrop: "Water Drop",
+        tipAperture: "Smaller f-number = more light & shallower depth of field",
+        tipShutter: "Shutter speed affects exposure time & motion blur",
+        tipISO: "Higher ISO = more sensitivity but more noise",
+        tipEV: "Exposure compensation: positive brightens, negative darkens",
+        tipWB: "Color temperature: low = cooler (blue), high = warmer (yellow)",
+        tipCurve: "Drag control points to adjust brightness curve, applied in real-time",
+        tipClarity: "Enhances midtone contrast for a clearer image",
+        tipDehaze: "Removes atmospheric haze, increases clarity & contrast",
+        tipTexture: "Enhance or reduce fine detail texture",
+        tipSplitTone: "Add color toning separately to highlights and shadows",
+        tipGrain: "Simulate film grain effect",
+        githubLink: "GitHub",
+        portrait: "Portrait", skinSmoothing: "Skin Smoothing", skinSmoothingIntensity: "Smoothing Intensity",
+        eyeBrightening: "Eye Brightening", eyeBrighteningIntensity: "Eye Brightness",
+        faceSlimming: "Face Slimming", faceSlimmingIntensity: "Slimming Intensity",
+        teethWhitening: "Teeth Whitening", teethWhiteningIntensity: "Whitening Intensity",
+        redEyeRemoval: "Red Eye Removal", beautyMode: "Beauty Mode",
+        portraitBlur: "Background Blur", portraitBlurIntensity: "Blur Intensity",
+        skinTone: "Skin Tone", skinToneWarmth: "Skin Warmth",
+        tipSkinSmooth: "Soften skin texture, reduce blemishes while preserving facial details",
+        tipEyeBright: "Enhance eye brightness and catchlights for more vivid eyes",
+        tipFaceSlim: "Subtly adjust facial contours for a slimmer look",
+        tipTeethWhite: "Brighten and whiten teeth tones",
+        tipRedEye: "Remove red-eye caused by flash",
+        tipPortraitBlur: "Simulate shallow depth-of-field background blur",
+        tipSkinTone: "Adjust skin color warmth/coolness",
+        chinAdjust: "Chin Adjust", chinAdjustIntensity: "Chin Intensity",
+        cheekAdjust: "Cheek Proportion", cheekAdjustIntensity: "Cheek Intensity",
+        noseThinning: "Nose Thinning", noseThinningIntensity: "Nose Intensity",
+        lipEnhance: "Lip Enhance", lipEnhanceIntensity: "Lip Intensity",
+        foreheadAdjust: "Forehead Adjust", foreheadAdjustIntensity: "Forehead Intensity",
+        faceBrightening: "Face Brightening", faceBrighteningIntensity: "Brightening Intensity",
+        jawlineDefine: "Jawline Define", jawlineDefineIntensity: "Jawline Intensity",
+        tipChinAdjust: "Adjust chin length and prominence",
+        tipCheekAdjust: "Adjust cheek width and proportion",
+        tipNoseThinning: "Subtly slim the nose bridge for a finer look",
+        tipLipEnhance: "Adjust lip fullness and color vibrancy",
+        tipForeheadAdjust: "Adjust forehead proportion and size",
+        tipFaceBrightening: "Brighten facial skin tone for a radiant glow",
+        tipJawlineDefine: "Enhance jawline definition for sharper contours",
+        panelOffset: "Panel Offset", tipPanelOffset: "Adjust control panel position to avoid blocking image details",
+        installApp: "Install App", installPrompt: "Install to home screen", dismiss: "Dismiss",
+        footerSource: "Default image: default.jpeg (upload your own image)",
+        footerNote: "Preview uses SVG filter for real-time curve; export applies full pixel processing.",
+        enabled: "Enabled", disabled: "Disabled",
+        crossProcess: "Cross Process", bleachBypass: "Bleach Bypass", lomo: "Lomo",
+        filmPortra: "Film: Portra", filmTriX: "Film: Tri-X",
+        warmFilm: "Warm Film", coolTone: "Cool Tone", moody: "Moody",
+        dreamy: "Dreamy", noir: "Noir", fade: "Fade",
+        vibrant: "Vibrant", retro: "Retro",
+      },
+      ja: {
+        title: "PRO CAMERA SIMULATOR",
+        subtitle: "プロカメラシミュレーター — 絞り・シャッター・ISO・曲線などリアルタイムプレビュー",
+        livePreview: "ライブプレビュー", previewDesc: "レンズ、センサー、色、後処理効果をシミュレート", controls: "コントロール",
+        controlsDesc: "撮影と後処理パラメータを調整", shooting: "撮影設定", editing: "編集設定",
+        exposure: "露出", aperture: "絞り", shutterSpeed: "シャッター速度", iso: "ISO感度",
+        ev: "EV補正", whiteBalance: "ホワイトバランス (K)", brandColor: "ブランドカラー",
+        sensor: "センサー", lensOptics: "レンズ & 被写界深度", focalLength: "焦点距離 (mm)",
+        vignette: "ビネット", distortion: "歪み",
+        aberration: "色収差", bokeh: "ボケ", megapixels: "画素シミュレーション (MP)",
+        flashSettings: "フラッシュ設定", flashBrightness: "フラッシュ明度", flashTime: "フラッシュ時間",
+        enableFlash: "フラッシュ有効化", testFlash: "テストフラッシュ", motionBlur: "モーションブラー",
+        compositionGuide: "構図ガイド", off: "オフ", thirds: "三分法",
+        golden: "黄金比", diagonal: "対角線", globalTone: "トーン全体",
+        postBrightness: "ポスト明度", highlights: "ハイライト", shadows: "シャドウ",
+        atmosphere: "雰囲気", displayFilm: "ディスプレイ & フィルター", displaySim: "ディスプレイシミュレーション",
+        filterType: "フィルター効果", toneAdjust: "トーン調整", warmth: "色温度 (クール←→ウォーム)",
+        saturation: "彩度", contrast: "コントラスト", detailCurve: "詳細 & 曲線",
+        sharpen: "シャープ化", noiseReduction: "ノイズ低減", curveAdjust: "曲線調整",
+        resetCurve: "曲線リセット", lightLeak: "光漏れ", lightLeakIntensity: "光漏れ強度",
+        lightLeakColor: "光漏れ色", lightLeakPos: "光漏れ位置（複数選択可）",
+        noise: "ノイズ", noiseIntensity: "ノイズ強度", neuralDenoise: "ニューラルノイズ除去",
+        watermark: "ウォーターマーク", watermarkText: "テキスト", watermarkOpacity: "不透明度",
+        watermarkSize: "サイズ", watermarkPos: "位置",
+        exportSection: "エクスポート", exportPNG: "PNG出力", exportJSON: "設定出力",
+        reset: "リセット", interactiveBadge: "インタラクティブ", upload: "アップロード", resetImg: "画像リセット",
+        digitalZoom: "デジタルズーム", triggerFlash: "フラッシュ発光",
+        none: "なし", bw: "白黒", vintage: "ビンテージ", hdr: "HDR", cinematic: "シネマティック",
+        oled: "OLED", qled: "QLED", miniled: "MiniLED",
+        topLeft: "左上", topCenter: "上中央", topRight: "右上",
+        leftCenter: "左中央", center: "中央", rightCenter: "右中央",
+        bottomLeft: "左下", bottomCenter: "下中央", bottomRight: "右下",
+        metering: "測光モード", spot: "スポット", centerWeighted: "中央重点", evaluative: "評価測光",
+        driveMode: "ドライブモード", single: "シングル", contLow: "低速連写", contHigh: "高速連写", timer: "タイマー",
+        imageStab: "手ブレ補正", colorSpace: "色空間",
+        clarity: "明瞭度", dehaze: "かすみ除去", texture: "テクスチャ",
+        splitToning: "スプリットトーニング", hlHue: "ハイライト色相", hlSat: "ハイライト彩度",
+        shHue: "シャドウ色相", shSat: "シャドウ彩度",
+        grain: "粒子", grainAmount: "粒子量", grainSize: "粒子サイズ",
+        defects: "画像欠陥", dust: "ダスト", scratch: "スクラッチ", haze: "ヘイズ", waterdrop: "水滴",
+        tipAperture: "F値が小さいほど光量が増え、被写界深度が浅くなります",
+        tipShutter: "シャッター速度は露出時間とモーションブラーに影響します",
+        tipISO: "ISOが高いほど感度が上がりますが、ノイズも増えます",
+        tipEV: "露出補正：プラスで明るく、マイナスで暗く",
+        tipWB: "色温度：低い値は青み、高い値は黄色み",
+        tipCurve: "ポイントをドラッグして明度曲線を調整、リアルタイムで適用",
+        tipClarity: "中間調のコントラストを強化し、くっきりした画像に",
+        tipDehaze: "大気のかすみを除去し、明瞭度とコントラストを向上",
+        tipTexture: "細部のテクスチャを強化または抑制",
+        tipSplitTone: "ハイライトとシャドウに個別の色調を追加",
+        tipGrain: "フィルムの粒子効果をシミュレート",
+        githubLink: "GitHub",
+        portrait: "ポートレート", skinSmoothing: "美肌補正", skinSmoothingIntensity: "美肌強度",
+        eyeBrightening: "アイブライト", eyeBrighteningIntensity: "アイブライト強度",
+        faceSlimming: "小顔補正", faceSlimmingIntensity: "小顔強度",
+        teethWhitening: "歯のホワイトニング", teethWhiteningIntensity: "ホワイトニング強度",
+        redEyeRemoval: "赤目補正", beautyMode: "ビューティーモード",
+        portraitBlur: "背景ぼかし", portraitBlurIntensity: "ぼかし強度",
+        skinTone: "肌色調整", skinToneWarmth: "肌色の色温度",
+        tipSkinSmooth: "肌のテクスチャを滑らかにし、パーツのディテールを維持",
+        tipEyeBright: "目の輝きとキャッチライトを強化",
+        tipFaceSlim: "顔の輪郭を微調整してスリムな印象に",
+        tipTeethWhite: "歯のトーンを明るくホワイトニング",
+        tipRedEye: "フラッシュによる赤目を除去",
+        tipPortraitBlur: "大口径レンズの背景ぼかしをシミュレート",
+        tipSkinTone: "肌色の暖かさ/冷たさを調整",
+        chinAdjust: "あご調整", chinAdjustIntensity: "あご強度",
+        cheekAdjust: "頬の比率", cheekAdjustIntensity: "頬の強度",
+        noseThinning: "鼻筋補正", noseThinningIntensity: "鼻筋強度",
+        lipEnhance: "唇調整", lipEnhanceIntensity: "唇強度",
+        foreheadAdjust: "額調整", foreheadAdjustIntensity: "額強度",
+        faceBrightening: "顔の明るさ", faceBrighteningIntensity: "明るさ強度",
+        jawlineDefine: "フェイスライン", jawlineDefineIntensity: "フェイスライン強度",
+        tipChinAdjust: "あごの長さと突出度を調整",
+        tipCheekAdjust: "頬の幅と比率を調整",
+        tipNoseThinning: "鼻筋を細く調整してすっきりとした印象に",
+        tipLipEnhance: "唇のふっくら感と色味を調整",
+        tipForeheadAdjust: "額の比率とサイズを調整",
+        tipFaceBrightening: "顔の肌色を明るくし、輝きを追加",
+        tipJawlineDefine: "フェイスラインを強調してシャープな輪郭に",
+        panelOffset: "パネルオフセット", tipPanelOffset: "設定調整時に画像を遮らないようパネル位置を調整",
+        installApp: "アプリ追加", installPrompt: "ホーム画面に追加", dismiss: "閉じる",
+        footerSource: "デフォルト画像：default.jpeg（画像アップロード可能）",
+        footerNote: "プレビューはSVGフィルターで曲線をリアルタイム適用。出力は完全なピクセル処理。",
+        enabled: "有効", disabled: "無効",
+        crossProcess: "クロスプロセス", bleachBypass: "ブリーチバイパス", lomo: "ロモ",
+        filmPortra: "Portra風", filmTriX: "Tri-X風",
+        warmFilm: "ウォームフィルム", coolTone: "クールトーン", moody: "ムーディ",
+        dreamy: "ドリーミー", noir: "ノワール", fade: "フェード",
+        vibrant: "ビビッド", retro: "レトロ",
+      }
+    };
+
+    /* ========================= Utilities ========================= */
+    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+    function lerp(a, b, t) { return a + (b - a) * t; }
+
+    function interpCurve(pts, t) {
+      if (!pts || pts.length === 0) return t;
+      if (t <= pts[0].x) return pts[0].y;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p0 = pts[i], p1 = pts[i + 1];
+        if (t >= p0.x && t <= p1.x) {
+          const lt = (t - p0.x) / (p1.x - p0.x || 1);
+          const s = lt * lt * (3 - 2 * lt); // smoothstep
+          return lerp(p0.y, p1.y, s);
+        }
+      }
+      return pts[pts.length - 1].y;
+    }
+
+    function generateLUT(curvePoints) {
+      const lut = new Uint8ClampedArray(256);
+      for (let i = 0; i < 256; i++) {
+        lut[i] = Math.round(clamp(interpCurve(curvePoints, i / 255), 0, 1) * 255);
+      }
+      return lut;
+    }
+
+    // Generate SVG table values for feComponentTransfer (real-time curve preview)
+    function generateTableValues(curvePoints, n = 64) {
+      const v = [];
+      for (let i = 0; i <= n; i++) {
+        v.push(clamp(interpCurve(curvePoints, i / n), 0, 1).toFixed(4));
+      }
+      return v.join(" ");
+    }
+
+    function hexToRgba(hex, a = 1) {
+      const h = hex.replace("#", "");
+      return `rgba(${parseInt(h.slice(0,2),16)},${parseInt(h.slice(2,4),16)},${parseInt(h.slice(4,6),16)},${a})`;
+    }
+    function rgbToHex(rgba) {
+      const m = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+      if (!m) return "#ff7850";
+      return "#" + [m[1],m[2],m[3]].map(c => parseInt(c).toString(16).padStart(2,"0")).join("");
+    }
+
+    // Watermark position keys (language-independent)
+    const WM_POSITIONS = ["top-left","top-center","top-right","left-center","center","right-center","bottom-left","bottom-center","bottom-right"];
+    const WM_POS_I18N_KEYS = ["topLeft","topCenter","topRight","leftCenter","center","rightCenter","bottomLeft","bottomCenter","bottomRight"];
+
+    // Light leak position coordinates
+    const LL_COORDS = [
+      {x:0.1,y:0.2},{x:0.5,y:0.1},{x:0.9,y:0.15},
+      {x:0.1,y:0.5},{x:0.5,y:0.5},{x:0.9,y:0.5},
+      {x:0.1,y:0.9},{x:0.5,y:0.9},{x:0.9,y:0.85}
+    ];
+
+    const DEFAULT_CURVE = [
+      {x:0,y:0},{x:0.07,y:0.07},{x:0.14,y:0.14},{x:0.21,y:0.21},{x:0.29,y:0.29},
+      {x:0.36,y:0.36},{x:0.43,y:0.43},{x:0.5,y:0.5},{x:0.57,y:0.57},{x:0.64,y:0.64},
+      {x:0.71,y:0.71},{x:0.79,y:0.79},{x:0.86,y:0.86},{x:0.93,y:0.93},{x:1,y:1}
+    ];
+
+    /* ========================= Compute Filters ========================= */
+    function computeFilters(settings, post, lens, motionBlur, zoom, neuralDenoise, noiseLevel, flashBoost, portrait) {
+      const shutterSec = settings.shutterSec;
+      const apertureFactor = 1 / settings.aperture;
+      const isoFactor = settings.iso / 100;
+      const exposure = (clamp(shutterSec, 1/160000, 30) * apertureFactor * isoFactor) * Math.pow(2, settings.ev);
+
+      let brightness = clamp(1 + (exposure - 0.02) * 6 + post.brightness * 0.01 + (flashBoost || 0), 0.2, 4);
+      let contrast = 1 + (post.highlights - post.shadows) * 0.002 + post.atmosphere * 0.002;
+      let saturation = 1 + post.toneSaturation * 0.01;
+      let hue = 0;
+
+      // Brand color simulation
+      if (settings.brandColor === "fuji") { saturation += 0.15; hue -= 8; contrast += 0.06; }
+      if (settings.brandColor === "canon") { saturation += 0.12; hue += 8; contrast += 0.04; }
+      if (settings.brandColor === "nikon") { contrast += 0.12; saturation += 0.10; hue -= 2; }
+      if (settings.brandColor === "leica") { contrast += 0.16; saturation += 0.08; hue += 3; }
+      if (settings.brandColor === "sony") { contrast += 0.08; saturation += 0.05; }
+
+      // Display sim
+      if (post.displaySim === "oled") { contrast *= 1.06; saturation *= 1.02; }
+      if (post.displaySim === "qled") { saturation *= 1.08; }
+      if (post.displaySim === "miniled") { contrast *= 1.04; saturation *= 1.03; }
+
+      // Clarity (midtone contrast boost)
+      contrast += (post.clarity || 0) * 0.003;
+      // Dehaze
+      contrast += (post.dehaze || 0) * 0.004;
+      brightness += (post.dehaze || 0) * -0.001;
+
+      // Filter type
+      let extra = "";
+      const fMap = {
+        bw: "grayscale(1)", vintage: "sepia(0.35)", hdr: "contrast(1.15) saturate(1.1)",
+        cinematic: "contrast(1.08) saturate(1.05)", cross: "hue-rotate(-8deg) saturate(1.12)",
+        bleach: "saturate(0.9) contrast(1.12) brightness(1.02)", lomo: "saturate(1.25) contrast(1.08)",
+        "film-portra": "saturate(1.02) contrast(1.03)", "film-tri-x": "grayscale(1) contrast(1.08)",
+        "warm-film": "sepia(0.25) saturate(1.15) hue-rotate(12deg)", "cool-tone": "hue-rotate(-15deg) saturate(1.08)",
+        moody: "contrast(1.25) saturate(0.85) brightness(0.92)", dreamy: "brightness(1.08) saturate(1.2) contrast(0.95)",
+        noir: "grayscale(1) contrast(1.35) brightness(0.88)", fade: "grayscale(0.5) brightness(1.12) contrast(0.85)",
+        vibrant: "saturate(1.4) contrast(1.12)", retro: "sepia(0.45) saturate(1.25) contrast(1.08)"
+      };
+      extra = fMap[post.filterType] || "";
+
+      // Tone warmth
+      if (post.toneWarmth > 0) extra += ` sepia(${(post.toneWarmth * 0.0015).toFixed(3)})`;
+      else if (post.toneWarmth < 0) extra += ` hue-rotate(${(post.toneWarmth * 0.12).toFixed(1)}deg)`;
+
+      // Tone contrast
+      if (post.toneContrast) {
+        const cm = clamp(1 + post.toneContrast * 0.002, 0.5, 2);
+        extra += ` contrast(${cm.toFixed(3)})`;
+      }
+
+      // Blur
+      let blurPx = Math.max(0, 2 - settings.sharpening * 0.03 - settings.noiseReduction * 0.02 + motionBlur * 2);
+      // Pixel simulation
+      const mp = settings.megapixels;
+      if (mp < 40) blurPx += mp < 5 ? 1 : mp < 12 ? 0.4 : mp < 24 ? 0.2 : 0;
+      // Neural denoise reduces blur
+      const denoiseEffect = neuralDenoise.enabled ? (1 - clamp(neuralDenoise.strength, 0, 1) * 0.9) : 1;
+      // Texture effect
+      blurPx += (post.texture || 0) * -0.01;
+
+      // Portrait processing effects on preview
+      const p = portrait || {};
+      if (p.beautyMode) {
+        // Skin smoothing = slight blur + brightness
+        if (p.skinSmoothing > 0) { blurPx += p.skinSmoothing * 0.008; brightness += p.skinSmoothing * 0.001; }
+        // Eye brightening = slight contrast boost
+        if (p.eyeBrightening > 0) { contrast += p.eyeBrightening * 0.001; }
+        // Teeth whitening = slight saturation/brightness
+        if (p.teethWhitening > 0) { brightness += p.teethWhitening * 0.0005; }
+        // Face slimming = subtle contrast adjustment
+        if (p.faceSlimming > 0) { contrast += p.faceSlimming * 0.0004; }
+        // Chin adjust = subtle highlight simulation
+        if (p.chinAdjust) { contrast += Math.abs(p.chinAdjust) * 0.0003; }
+        // Cheek adjust = subtle width simulation
+        if (p.cheekAdjust) { contrast += Math.abs(p.cheekAdjust) * 0.0003; }
+        // Nose thinning = slight sharpening
+        if (p.noseThinning > 0) { contrast += p.noseThinning * 0.0005; }
+        // Lip enhance = saturation boost
+        if (p.lipEnhance > 0) { saturation += p.lipEnhance * 0.001; }
+        // Forehead adjust = subtle transform
+        if (p.foreheadAdjust) { contrast += Math.abs(p.foreheadAdjust) * 0.0002; }
+        // Face brightening = brightness boost
+        if (p.faceBrightening > 0) { brightness += p.faceBrightening * 0.002; }
+        // Jawline define = contrast/shadow boost
+        if (p.jawlineDefine > 0) { contrast += p.jawlineDefine * 0.0008; }
+        // Skin tone warmth
+        if (p.skinToneWarmth > 0) hue += p.skinToneWarmth * 0.08;
+        else if (p.skinToneWarmth < 0) hue += p.skinToneWarmth * 0.06;
+      }
+      // Portrait background blur
+      if ((p.portraitBlur || 0) > 0) { blurPx += p.portraitBlur * 0.015; }
+
+      const cssFilter = `brightness(${brightness.toFixed(3)}) contrast(${contrast.toFixed(3)}) saturate(${saturation.toFixed(3)}) hue-rotate(${hue}deg) ${extra} url(#curveFilter) blur(${(Math.max(0, blurPx) * denoiseEffect).toFixed(2)}px)`.trim();
+
+      return { cssFilter, brightness, contrast, saturation, blurPx, denoiseEffect };
+    }
+
+    /* ========================= Components ========================= */
+
+    function Tooltip({ text }) {
+      if (!text) return null;
+      return (
+        <span className="tooltip-wrap">
+          <span className="tooltip-icon">?</span>
+          <span className="tooltip-text">{text}</span>
+        </span>
+      );
+    }
+
+    function Slider({ label, value, min, max, step, onChange, format, tip }) {
+      return (
+        <div style={{marginBottom: 6}}>
+          <div className="label-row">
+            <div style={{display:"flex",gap:4,alignItems:"center"}}>
+              <span>{label}</span>
+              {tip && <Tooltip text={tip} />}
+            </div>
+            <span className="label-val">{format ? format(value) : value}</span>
+          </div>
+          <input type="range" min={min} max={max} step={step} value={value}
+            onChange={(e) => onChange(parseFloat(e.target.value))} style={{width:"100%"}} />
+        </div>
+      );
+    }
+
+    function Toggle({ label, value, onChange }) {
+      return (
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+          <span style={{fontSize:11,color:"var(--muted)"}}>{label}</span>
+          <button className={"tag " + (value?"active":"")} onClick={()=>onChange(!value)} style={{fontSize:11}}>
+            {value ? "ON" : "OFF"}
+          </button>
+        </div>
+      );
+    }
+
+    /* ========================= Curve Editor ========================= */
+    function CurveEditor({ curvePoints, setCurvePoints, t }) {
+      const boxRef = useRef(null);
+      const [dragIdx, setDragIdx] = useState(-1);
+
+      function posToPoint(cx, cy, rect) {
+        return {
+          x: clamp((cx - rect.left) / rect.width, 0, 1),
+          y: clamp(1 - (cy - rect.top) / rect.height, 0, 1)
+        };
+      }
+
+      useEffect(() => {
+        function onMove(e) {
+          if (dragIdx < 0) return;
+          e.preventDefault();
+          const rect = boxRef.current.getBoundingClientRect();
+          const cx = e.touches ? e.touches[0].clientX : e.clientX;
+          const cy = e.touches ? e.touches[0].clientY : e.clientY;
+          const p = posToPoint(cx, cy, rect);
+          setCurvePoints(prev => {
+            const next = prev.map(pt => ({...pt}));
+            const i = dragIdx;
+            const lb = i === 0 ? 0 : next[i-1].x + 0.01;
+            const rb = i === next.length - 1 ? 1 : next[i+1].x - 0.01;
+            next[i].x = clamp(p.x, lb, rb);
+            next[i].y = clamp(p.y, 0, 1);
+            return next;
+          });
+        }
+        function onUp() { setDragIdx(-1); }
+        window.addEventListener("mousemove", onMove);
+        window.addEventListener("mouseup", onUp);
+        window.addEventListener("touchmove", onMove, {passive: false});
+        window.addEventListener("touchend", onUp);
+        return () => {
+          window.removeEventListener("mousemove", onMove);
+          window.removeEventListener("mouseup", onUp);
+          window.removeEventListener("touchmove", onMove);
+          window.removeEventListener("touchend", onUp);
+        };
+      }, [dragIdx, setCurvePoints]);
+
+      return (
+        <div>
+          <div style={{display:"flex",gap:6,marginBottom:6,alignItems:"center"}}>
+            <button className="muted-btn" onClick={() => setCurvePoints(DEFAULT_CURVE.map(p => ({...p})))}>{t("resetCurve")}</button>
+            <span className="small" style={{marginLeft:4}}>{t("tipCurve")}</span>
+          </div>
+          <div className="curve-box" ref={boxRef}>
+            <div className="curve-grid">
+              {/* Grid lines */}
+              <div style={{position:"absolute",left:"50%",top:0,bottom:0,width:1,background:"rgba(79,140,255,0.08)"}} />
+              <div style={{position:"absolute",top:"50%",left:0,right:0,height:1,background:"rgba(79,140,255,0.08)"}} />
+            </div>
+            <svg className="curve-canvas" style={{width:"100%",height:"100%"}} viewBox="0 0 100 100" preserveAspectRatio="none">
+              {/* Diagonal reference line */}
+              <line x1="0" y1="100" x2="100" y2="0" stroke="rgba(79,140,255,0.12)" strokeWidth="0.5" />
+              {/* Curve path */}
+              <path d={curvePoints.map((p,i) => {
+                const x = (p.x*100).toFixed(1), y = ((1-p.y)*100).toFixed(1);
+                return i===0 ? `M ${x} ${y}` : `L ${x} ${y}`;
+              }).join(" ")} stroke="rgba(79,140,255,0.9)" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+            </svg>
+            {curvePoints.map((p,i) => (
+              <div key={i} className="curve-handle"
+                style={{left:`calc(6px + ${p.x * 100}% * (1 - 12px/100%))`, top:`calc(6px + ${(1-p.y) * 100}% * (1 - 12px/100%))`}}
+                onMouseDown={(e) => { e.preventDefault(); setDragIdx(i); }}
+                onTouchStart={(e) => { e.preventDefault(); setDragIdx(i); }}
+                title={`#${i}: (${p.x.toFixed(2)}, ${p.y.toFixed(2)})`}
+              />
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    /* ========================= Camera Preview ========================= */
+    function CameraPreview({ settings, post, lens, defects, flashSettings, motionBlur, composition, watermark, zoom, neuralDenoise, noiseLevel, grain, portrait, setZoom, customImage, setCustomImage, curvePoints, t }) {
+      const [aspect, setAspect] = useState("3:2");
+      const [flashActive, setFlashActive] = useState(false);
+      const [focusPt, setFocusPt] = useState(null);
+      const imgRef = useRef(null);
+      const flashRef = useRef(null);
+      const frameRef = useRef(null);
+      const fileRef = useRef(null);
+
+      const defaultImg = "./default.jpeg";
+      const imgSrc = customImage || defaultImg;
+      const isLocalImg = !customImage;
+
+      function handleUpload(e) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => setCustomImage(ev.target?.result);
+        reader.readAsDataURL(file);
+      }
+
+      const { cssFilter } = useMemo(() =>
+        computeFilters(settings, post, lens, motionBlur, zoom, neuralDenoise, noiseLevel, 0, portrait),
+        [settings, post, lens, motionBlur, zoom, neuralDenoise, noiseLevel, curvePoints, portrait]
+      );
+
+      // Update SVG curve filter when curvePoints change
+      useEffect(() => {
+        const tv = generateTableValues(curvePoints);
+        const rEl = document.getElementById("curveR");
+        const gEl = document.getElementById("curveG");
+        const bEl = document.getElementById("curveB");
+        if (rEl) rEl.setAttribute("tableValues", tv);
+        if (gEl) gEl.setAttribute("tableValues", tv);
+        if (bEl) bEl.setAttribute("tableValues", tv);
+      }, [curvePoints]);
+
+      function triggerFlash() {
+        if (!flashSettings.enabled) return;
+        setFlashActive(true);
+        const el = flashRef.current;
+        if (!el) return;
+        const dur = clamp(flashSettings.duration, 10, 2000);
+        el.style.transition = `opacity ${Math.max(20, dur/4)}ms linear`;
+        el.style.opacity = String(clamp(flashSettings.intensity * 0.9, 0.2, 1));
+        setTimeout(() => {
+          el.style.transition = `opacity ${Math.max(80, dur)}ms linear`;
+          el.style.opacity = "0";
+          setTimeout(() => setFlashActive(false), dur + 50);
+        }, dur / 6);
+      }
+
+      useEffect(() => {
+        window._triggerFlash = triggerFlash;
+        return () => delete window._triggerFlash;
+      }, [flashSettings]);
+
+      const exposureInfo = `${settings.exposureMode.toUpperCase()} · f/${settings.aperture.toFixed(1)} · ${settings.shutterSec < 1 ? `1/${Math.round(1/settings.shutterSec)}` : `${settings.shutterSec.toFixed(1)}s`} · ISO ${settings.iso}`;
+      const extraInfo = `WB ${Math.round(settings.wbK)}K · EV ${settings.ev > 0 ? "+" : ""}${settings.ev.toFixed(1)} · ${settings.megapixels}MP`;
+
+      return (
+        <div className="preview-shell">
+          <div className="preview-top">
+            <div style={{display:"flex",gap:8,alignItems:"center"}}>
+              <div className="led" />
+              <div>
+                <div style={{fontSize:12,fontWeight:500}}>{exposureInfo}</div>
+                <div style={{fontSize:11}}>{extraInfo}</div>
+              </div>
+            </div>
+            <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
+              <button className="muted-btn" onClick={() => fileRef.current?.click()}>{t("upload")}</button>
+              <input type="file" ref={fileRef} accept="image/*" onChange={handleUpload} style={{display:"none"}} />
+              {customImage && <button className="muted-btn" onClick={() => setCustomImage(null)}>{t("resetImg")}</button>}
+              <div className="aspect-toggle">
+                {["3:2","4:3","16:9","1:1"].map(a => (
+                  <button key={a} className={"aspect-btn " + (aspect===a?"active":"")} onClick={() => setAspect(a)}>{a}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="frame" ref={frameRef} onClick={(e) => {
+            const r = frameRef.current.getBoundingClientRect();
+            setFocusPt({x:(e.clientX-r.left)/r.width, y:(e.clientY-r.top)/r.height});
+            setTimeout(() => setFocusPt(null), 2000);
+          }}>
+            <div className={`img-wrap a-${aspect.replace(":","-")}`}>
+              <img ref={imgRef} src={imgSrc} alt="Preview" className="preview-img" {...(!isLocalImg ? {crossOrigin:"anonymous"} : {})} loading="lazy"
+                style={{
+                  transform: `scale(${zoom})`,
+                  filter: cssFilter,
+                  transition: "transform 250ms cubic-bezier(.2,.9,.2,1), filter 200ms ease"
+                }}
+              />
+              <div className="overlay">
+                <div className="vignette" style={{opacity: lens.vignette}} />
+                <div className={"dust " + (defects.dust > 0.02 ? "vis" : "")} />
+                <div className={"scratch " + (defects.scratch > 0.02 ? "vis" : "")} />
+                <div className={"haze " + (defects.haze > 0.02 ? "vis" : "")} />
+                <div className={"bokeh-overlay " + (lens.bokeh > 0.4 ? "vis" : "")} />
+                <div className={"waterdrop " + (defects.waterdrop > 0.02 ? "vis" : "")} style={{opacity: defects.waterdrop}} />
+                <div className={"motion-blur " + (motionBlur > 0.3 ? "active" : "")} />
+                {post.lightLeakPositions && post.lightLeakPositions.map((pos, idx) => pos.active && (
+                  <div key={idx} className="lightleak" style={{
+                    opacity: post.lightLeakIntensity,
+                    background: `radial-gradient(circle at ${pos.x*100}% ${pos.y*100}%, ${post.lightLeakColor} 0%, transparent 40%)`,
+                    animation: "lightleakPulse 6s ease-in-out infinite", mixBlendMode: "screen"
+                  }} />
+                ))}
+
+                {/* Composition guides */}
+                {composition === "thirds" && <>
+                  <div className="grid-line h" style={{top:"33.33%"}} />
+                  <div className="grid-line h" style={{top:"66.66%"}} />
+                  <div className="grid-line v" style={{left:"33.33%"}} />
+                  <div className="grid-line v" style={{left:"66.66%"}} />
+                </>}
+                {composition === "golden" && <>
+                  <div className="grid-line h" style={{top:"38.2%"}} />
+                  <div className="grid-line h" style={{top:"61.8%"}} />
+                  <div className="grid-line v" style={{left:"38.2%"}} />
+                  <div className="grid-line v" style={{left:"61.8%"}} />
+                </>}
+                {composition === "diagonal" && <>
+                  <div className="grid-line" style={{width:"140%",height:"1px",top:"50%",left:"-20%",transform:"rotate(35deg)",opacity:0.3}} />
+                  <div className="grid-line" style={{width:"140%",height:"1px",top:"50%",left:"-20%",transform:"rotate(-35deg)",opacity:0.3}} />
+                </>}
+
+                {/* Watermark */}
+                {watermark.text && (
+                  <div style={{
+                    position:"absolute", color:`rgba(255,255,255,${watermark.opacity})`,
+                    fontSize: watermark.fontSize, letterSpacing:"0.1em", textTransform:"uppercase",
+                    textShadow:"0 0 6px rgba(0,0,0,0.7)", pointerEvents:"none", fontWeight:600,
+                    ...getWatermarkStyle(watermark.position)
+                  }}>{watermark.text}</div>
+                )}
+
+                <div ref={flashRef} className="flash-overlay" />
+                {focusPt && <div className="focus-ring" style={{left:`${focusPt.x*100}%`, top:`${focusPt.y*100}%`}} />}
+              </div>
+            </div>
+          </div>
+
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:6,marginTop:2}}>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+              <span className="preview-info">{lens.type === "prime" ? `${Math.round(lens.focalLength)}mm` : `${lens.focalMin}-${lens.focalMax}mm @${Math.round(lens.focalLength)}mm`}</span>
+              <span className="preview-info">{settings.brandColor.toUpperCase()}</span>
+              <span className="preview-info">{settings.sensor}</span>
+            </div>
+            <div style={{display:"flex",gap:8,alignItems:"center"}}>
+              <span className="small">{t("digitalZoom")}</span>
+              <input type="range" min="1" max="10" step="0.01" value={zoom}
+                onChange={(e) => setZoom(parseFloat(e.target.value))}
+                style={{width:80}} />
+              <span className="small">{zoom.toFixed(1)}x</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function getWatermarkStyle(position) {
+      const s = {};
+      if (position.includes("top")) s.top = "12px";
+      if (position.includes("bottom")) s.bottom = "12px";
+      if (position.includes("left") && !position.includes("center")) s.left = "12px";
+      if (position.includes("right")) s.right = "12px";
+      if (position === "center") { s.top = "50%"; s.left = "50%"; s.transform = "translate(-50%,-50%)"; }
+      if (position === "top-center" || position === "bottom-center") { s.left = "50%"; s.transform = "translateX(-50%)"; }
+      if (position === "left-center" || position === "right-center") { s.top = "50%"; s.transform = "translateY(-50%)"; }
+      return s;
+    }
+
+    /* ========================= Export Controls ========================= */
+    function ExportControls({ settings, post, lens, defects, flashSettings, motionBlur, watermark, curvePoints, zoom, neuralDenoise, noiseLevel, grain, portrait, customImage, isLoading, setIsLoading, t }) {
+
+      function exportJSON() {
+        const data = { settings, post, lens, defects, flashSettings, motionBlur, watermark, curvePoints, zoom, neuralDenoise, noiseLevel, grain, portrait, exportedAt: new Date().toISOString() };
+        const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a"); a.href = url; a.download = "camera-sim-settings.json"; a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      async function exportPNG() {
+        try {
+          setIsLoading(true);
+          const img = new Image();
+          const exportSrc = customImage || "./default.jpeg";
+          if (customImage) img.crossOrigin = "anonymous";
+          img.src = exportSrc;
+          await new Promise((res, rej) => { img.onload = res; img.onerror = rej; });
+
+          const mp = Math.max(0.1, settings.megapixels);
+          const aspectR = 3/2;
+          const h = Math.round(Math.sqrt(mp * 1e6 / aspectR));
+          const w = Math.round(h * aspectR);
+          const canvas = document.createElement("canvas");
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext("2d");
+
+          // Zoom crop
+          const srcW = img.naturalWidth / zoom, srcH = img.naturalHeight / zoom;
+          const sx = (img.naturalWidth - srcW) / 2, sy = (img.naturalHeight - srcH) / 2;
+
+          // Basic filters
+          const shutterSec = settings.shutterSec;
+          const exposure = (clamp(shutterSec,1/160000,30) / settings.aperture * (settings.iso/100)) * Math.pow(2, settings.ev);
+          const brightness = clamp(1 + (exposure - 0.02) * 6 + post.brightness * 0.01, 0.2, 4);
+          let contrast = 1 + (post.highlights - post.shadows) * 0.002;
+          let saturation = 1 + post.toneSaturation * 0.01;
+          contrast += (post.clarity || 0) * 0.003;
+          contrast += (post.dehaze || 0) * 0.004;
+
+          ctx.filter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation})`;
+          ctx.drawImage(img, sx, sy, srcW, srcH, 0, 0, w, h);
+          ctx.filter = "none";
+
+          // Vignette
+          if (lens.vignette > 0.02) {
+            const g = ctx.createRadialGradient(w/2, h/2, Math.min(w,h)*0.1, w/2, h/2, Math.max(w,h)*0.8);
+            g.addColorStop(0, "rgba(0,0,0,0)");
+            g.addColorStop(1, `rgba(0,0,0,${clamp(lens.vignette*0.9,0,0.95)})`);
+            ctx.globalCompositeOperation = "multiply"; ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+            ctx.globalCompositeOperation = "source-over";
+          }
+
+          // Light leaks
+          if (post.lightLeakIntensity > 0.01 && post.lightLeakPositions) {
+            post.lightLeakPositions.forEach(pos => {
+              if (!pos.active) return;
+              ctx.globalAlpha = clamp(post.lightLeakIntensity, 0, 0.9);
+              const lx = pos.x * w, ly = pos.y * h;
+              const g = ctx.createRadialGradient(lx, ly, 0, lx, ly, Math.max(w,h)*0.6);
+              const baseColor = post.lightLeakColor.replace(/rgba?\(([^)]+)\)/, (_, c) => {
+                const parts = c.split(",").map(s => s.trim());
+                return `rgba(${parts[0]},${parts[1]},${parts[2]},`;
+              });
+              g.addColorStop(0, post.lightLeakColor);
+              g.addColorStop(1, "rgba(0,0,0,0)");
+              ctx.globalCompositeOperation = "screen"; ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+              ctx.globalCompositeOperation = "source-over";
+            });
+            ctx.globalAlpha = 1;
+          }
+
+          // Noise
+          if (noiseLevel > 0.01) {
+            const imgData = ctx.getImageData(0,0,w,h);
+            const d = imgData.data;
+            const amp = clamp(noiseLevel, 0, 1) * 50;
+            for (let i = 0; i < d.length; i += 4) {
+              d[i] = clamp(d[i] + (Math.random()-0.5)*amp, 0, 255);
+              d[i+1] = clamp(d[i+1] + (Math.random()-0.5)*amp, 0, 255);
+              d[i+2] = clamp(d[i+2] + (Math.random()-0.5)*amp, 0, 255);
+            }
+            ctx.putImageData(imgData, 0, 0);
+          }
+
+          // Grain
+          if ((grain?.amount || 0) > 0.01) {
+            const imgData = ctx.getImageData(0,0,w,h);
+            const d = imgData.data;
+            const gAmp = clamp(grain.amount, 0, 1) * 30;
+            for (let i = 0; i < d.length; i += 4) {
+              const n = (Math.random()-0.5) * gAmp;
+              d[i] = clamp(d[i]+n, 0, 255);
+              d[i+1] = clamp(d[i+1]+n, 0, 255);
+              d[i+2] = clamp(d[i+2]+n, 0, 255);
+            }
+            ctx.putImageData(imgData, 0, 0);
+          }
+
+          // Neural denoise
+          if (neuralDenoise.enabled && neuralDenoise.strength > 0.01) {
+            const tmp = document.createElement("canvas"); tmp.width = w; tmp.height = h;
+            const tctx = tmp.getContext("2d");
+            tctx.filter = `blur(${clamp(1.5*neuralDenoise.strength, 0, 6)}px)`;
+            tctx.drawImage(canvas, 0, 0);
+            ctx.drawImage(tmp, 0, 0);
+          }
+
+          // Apply curve LUT
+          if (curvePoints && curvePoints.length >= 2) {
+            const imgData = ctx.getImageData(0,0,w,h);
+            const d = imgData.data;
+            const lut = generateLUT(curvePoints);
+            for (let i = 0; i < d.length; i += 4) {
+              d[i] = lut[d[i]]; d[i+1] = lut[d[i+1]]; d[i+2] = lut[d[i+2]];
+            }
+            ctx.putImageData(imgData, 0, 0);
+          }
+
+          // Portrait processing in export
+          if (portrait?.beautyMode) {
+            // Skin smoothing (Gaussian-like blur on export)
+            if (portrait.skinSmoothing > 0) {
+              const tmp = document.createElement("canvas"); tmp.width = w; tmp.height = h;
+              const tctx = tmp.getContext("2d");
+              const blurR = clamp(portrait.skinSmoothing * 0.04, 0, 8);
+              tctx.filter = `blur(${blurR}px)`;
+              tctx.drawImage(canvas, 0, 0);
+              // Blend original with blurred (preserve edges)
+              ctx.globalAlpha = clamp(portrait.skinSmoothing * 0.008, 0, 0.7);
+              ctx.drawImage(tmp, 0, 0);
+              ctx.globalAlpha = 1;
+            }
+            // Eye brightening (increase brightness in image center area)
+            if (portrait.eyeBrightening > 0) {
+              const imgData = ctx.getImageData(0, 0, w, h);
+              const d = imgData.data;
+              const boost = clamp(portrait.eyeBrightening * 0.15, 0, 20);
+              for (let i = 0; i < d.length; i += 4) {
+                const lum = (d[i] * 0.299 + d[i+1] * 0.587 + d[i+2] * 0.114);
+                if (lum > 150) {
+                  d[i] = clamp(d[i] + boost, 0, 255);
+                  d[i+1] = clamp(d[i+1] + boost, 0, 255);
+                  d[i+2] = clamp(d[i+2] + boost, 0, 255);
+                }
+              }
+              ctx.putImageData(imgData, 0, 0);
+            }
+            // Teeth whitening (boost brightness of yellowish tones)
+            if (portrait.teethWhitening > 0) {
+              const imgData = ctx.getImageData(0, 0, w, h);
+              const d = imgData.data;
+              const tw = clamp(portrait.teethWhitening * 0.1, 0, 15);
+              for (let i = 0; i < d.length; i += 4) {
+                // Detect warm/yellowish pixels
+                if (d[i] > 150 && d[i+1] > 130 && d[i+2] < d[i] - 30) {
+                  d[i] = clamp(d[i] + tw * 0.6, 0, 255);
+                  d[i+1] = clamp(d[i+1] + tw * 0.7, 0, 255);
+                  d[i+2] = clamp(d[i+2] + tw * 1.2, 0, 255);
+                }
+              }
+              ctx.putImageData(imgData, 0, 0);
+            }
+            // Skin tone warmth
+            if (portrait.skinToneWarmth !== 0) {
+              const imgData = ctx.getImageData(0, 0, w, h);
+              const d = imgData.data;
+              const sw = portrait.skinToneWarmth * 0.08;
+              for (let i = 0; i < d.length; i += 4) {
+                d[i] = clamp(d[i] + sw, 0, 255);
+                d[i+2] = clamp(d[i+2] - sw * 0.5, 0, 255);
+              }
+              ctx.putImageData(imgData, 0, 0);
+            }
+            // Red eye removal
+            if (portrait.redEyeRemoval) {
+              const imgData = ctx.getImageData(0, 0, w, h);
+              const d = imgData.data;
+              for (let i = 0; i < d.length; i += 4) {
+                const r = d[i], g = d[i+1], b = d[i+2];
+                if (r > 120 && g < 80 && b < 80 && r > g * 2) {
+                  const avg = (g + b) / 2;
+                  d[i] = avg;
+                }
+              }
+              ctx.putImageData(imgData, 0, 0);
+            }
+            // Portrait background blur
+            if (portrait.portraitBlur > 0) {
+              const tmp = document.createElement("canvas"); tmp.width = w; tmp.height = h;
+              const tctx = tmp.getContext("2d");
+              const bR = clamp(portrait.portraitBlur * 0.05, 0, 10);
+              tctx.filter = `blur(${bR}px)`;
+              tctx.drawImage(canvas, 0, 0);
+              // Keep center sharp (simple center-weighted mask)
+              const grd = ctx.createRadialGradient(w/2, h/2, Math.min(w,h)*0.2, w/2, h/2, Math.max(w,h)*0.6);
+              grd.addColorStop(0, "rgba(0,0,0,0)");
+              grd.addColorStop(1, "rgba(0,0,0,1)");
+              ctx.save();
+              ctx.globalCompositeOperation = "destination-over";
+              tctx.globalCompositeOperation = "destination-in";
+              tctx.fillStyle = grd;
+              tctx.fillRect(0, 0, w, h);
+              ctx.globalCompositeOperation = "source-over";
+              ctx.globalAlpha = clamp(portrait.portraitBlur * 0.008, 0, 0.8);
+              ctx.drawImage(tmp, 0, 0);
+              ctx.globalAlpha = 1;
+              ctx.restore();
+            }
+            // Face brightening (brighten skin-tone pixels)
+            if (portrait.faceBrightening > 0) {
+              const imgData = ctx.getImageData(0, 0, w, h);
+              const d = imgData.data;
+              const fb = clamp(portrait.faceBrightening * 0.18, 0, 20);
+              for (let i = 0; i < d.length; i += 4) {
+                if (d[i] > 100 && d[i+1] > 70 && d[i+2] > 50 && d[i] > d[i+2]) {
+                  d[i] = clamp(d[i] + fb, 0, 255);
+                  d[i+1] = clamp(d[i+1] + fb * 0.9, 0, 255);
+                  d[i+2] = clamp(d[i+2] + fb * 0.8, 0, 255);
+                }
+              }
+              ctx.putImageData(imgData, 0, 0);
+            }
+            // Jawline define (midtone contrast enhancement)
+            if (portrait.jawlineDefine > 0) {
+              const imgData = ctx.getImageData(0, 0, w, h);
+              const d = imgData.data;
+              const factor = 1 + clamp(portrait.jawlineDefine * 0.003, 0, 0.3);
+              for (let i = 0; i < d.length; i += 4) {
+                const lum = d[i] * 0.299 + d[i+1] * 0.587 + d[i+2] * 0.114;
+                if (lum > 60 && lum < 160) {
+                  d[i] = clamp((d[i] - 128) * factor + 128, 0, 255);
+                  d[i+1] = clamp((d[i+1] - 128) * factor + 128, 0, 255);
+                  d[i+2] = clamp((d[i+2] - 128) * factor + 128, 0, 255);
+                }
+              }
+              ctx.putImageData(imgData, 0, 0);
+            }
+            // Lip enhance (saturate reddish/pinkish tones)
+            if (portrait.lipEnhance > 0) {
+              const imgData = ctx.getImageData(0, 0, w, h);
+              const d = imgData.data;
+              const le = clamp(portrait.lipEnhance * 0.12, 0, 15);
+              for (let i = 0; i < d.length; i += 4) {
+                if (d[i] > 120 && d[i] > d[i+1] * 1.1 && d[i] > d[i+2] * 1.05) {
+                  d[i] = clamp(d[i] + le, 0, 255);
+                  d[i+1] = clamp(d[i+1] + le * 0.3, 0, 255);
+                }
+              }
+              ctx.putImageData(imgData, 0, 0);
+            }
+            // Face slimming & Nose thinning & Chin/Cheek/Forehead (gradient-based simulation)
+            {
+              let needGradient = (portrait.faceSlimming || 0) > 0 || (portrait.noseThinning || 0) > 0
+                || portrait.chinAdjust !== 0 || portrait.cheekAdjust !== 0 || portrait.foreheadAdjust !== 0;
+              if (needGradient) {
+                ctx.save();
+                ctx.globalCompositeOperation = "soft-light";
+                // Face slimming: darken sides to simulate narrower face
+                if (portrait.faceSlimming > 0) {
+                  const alpha = clamp(portrait.faceSlimming * 0.004, 0, 0.4);
+                  const grdL = ctx.createLinearGradient(0, 0, w * 0.25, 0);
+                  grdL.addColorStop(0, `rgba(0,0,0,${alpha})`); grdL.addColorStop(1, "rgba(0,0,0,0)");
+                  ctx.fillStyle = grdL; ctx.fillRect(0, h * 0.25, w * 0.25, h * 0.5);
+                  const grdR = ctx.createLinearGradient(w, 0, w * 0.75, 0);
+                  grdR.addColorStop(0, `rgba(0,0,0,${alpha})`); grdR.addColorStop(1, "rgba(0,0,0,0)");
+                  ctx.fillStyle = grdR; ctx.fillRect(w * 0.75, h * 0.25, w * 0.25, h * 0.5);
+                }
+                // Nose thinning: center vertical highlight
+                if (portrait.noseThinning > 0) {
+                  const alpha = clamp(portrait.noseThinning * 0.004, 0, 0.4);
+                  const grd = ctx.createRadialGradient(w * 0.5, h * 0.45, 0, w * 0.5, h * 0.45, Math.min(w, h) * 0.15);
+                  grd.addColorStop(0, `rgba(255,255,255,${alpha})`); grd.addColorStop(1, "rgba(255,255,255,0)");
+                  ctx.fillStyle = grd; ctx.fillRect(0, 0, w, h);
+                }
+                // Chin: bottom gradient
+                if (portrait.chinAdjust !== 0) {
+                  const alpha = clamp(Math.abs(portrait.chinAdjust) * 0.003, 0, 0.3);
+                  const color = portrait.chinAdjust > 0 ? `rgba(255,255,255,${alpha})` : `rgba(0,0,0,${alpha})`;
+                  const grd = ctx.createLinearGradient(0, h * 0.7, 0, h);
+                  grd.addColorStop(0, "rgba(0,0,0,0)"); grd.addColorStop(1, color);
+                  ctx.fillStyle = grd; ctx.fillRect(0, 0, w, h);
+                }
+                // Cheek: side gradients
+                if (portrait.cheekAdjust !== 0) {
+                  const alpha = clamp(Math.abs(portrait.cheekAdjust) * 0.003, 0, 0.3);
+                  const color = portrait.cheekAdjust > 0 ? `rgba(0,0,0,${alpha})` : `rgba(255,255,255,${alpha})`;
+                  const grdL = ctx.createLinearGradient(0, 0, w * 0.3, 0);
+                  grdL.addColorStop(0, color); grdL.addColorStop(1, "rgba(0,0,0,0)");
+                  ctx.fillStyle = grdL; ctx.fillRect(0, h * 0.3, w * 0.3, h * 0.4);
+                  const grdR = ctx.createLinearGradient(w, 0, w * 0.7, 0);
+                  grdR.addColorStop(0, color); grdR.addColorStop(1, "rgba(0,0,0,0)");
+                  ctx.fillStyle = grdR; ctx.fillRect(w * 0.7, h * 0.3, w * 0.3, h * 0.4);
+                }
+                // Forehead: top gradient
+                if (portrait.foreheadAdjust !== 0) {
+                  const alpha = clamp(Math.abs(portrait.foreheadAdjust) * 0.003, 0, 0.3);
+                  const color = portrait.foreheadAdjust > 0 ? `rgba(255,255,255,${alpha})` : `rgba(0,0,0,${alpha})`;
+                  const grd = ctx.createLinearGradient(0, 0, 0, h * 0.35);
+                  grd.addColorStop(0, color); grd.addColorStop(1, "rgba(0,0,0,0)");
+                  ctx.fillStyle = grd; ctx.fillRect(0, 0, w, h * 0.35);
+                }
+                ctx.restore();
+              }
+            }
+          }
+
+          // Watermark
+          if (watermark?.text) {
+            ctx.globalAlpha = watermark.opacity;
+            ctx.fillStyle = "#ffffff";
+            const scale = w / 400;
+            const fs = Math.max(14, Math.round((watermark.fontSize || 14) * scale));
+            ctx.font = `600 ${fs}px sans-serif`;
+            ctx.textBaseline = "bottom";
+            const tw = ctx.measureText(watermark.text).width;
+            let x = 20, y = h - 20;
+            if (watermark.position.includes("top")) y = 20 + fs;
+            if (watermark.position.includes("center") && !watermark.position.includes("left") && !watermark.position.includes("right")) x = (w - tw) / 2;
+            if (watermark.position.includes("right")) x = w - tw - 20;
+            if (watermark.position === "center") { x = (w-tw)/2; y = h/2 + fs/2; }
+            ctx.fillText(watermark.text, x, y);
+            ctx.globalAlpha = 1;
+          }
+
+          const url = canvas.toDataURL("image/png");
+          const a = document.createElement("a"); a.href = url; a.download = "camera-sim-export.png"; a.click();
+        } catch (err) {
+          console.error("Export failed:", err);
+          alert("匯出失敗，請確認瀏覽器允許跨域圖片或稍後再試。");
+        } finally {
+          setIsLoading(false);
+        }
+      }
+
+      return (
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          <button className="btn" onClick={exportPNG} disabled={isLoading}>
+            {isLoading ? "⏳ ..." : t("exportPNG")}
+          </button>
+          <button className="muted-btn" onClick={exportJSON}>{t("exportJSON")}</button>
+        </div>
+      );
+    }
+
+    /* ========================= Main App ========================= */
+    function App() {
+      // Language
+      const [lang, setLang] = useState(() => {
+        const p = new URLSearchParams(window.location.search).get("lang");
+        if (p && ["zh-Hant","en","ja"].includes(p)) return p;
+        return localStorage.getItem("lang") || "zh-Hant";
+      });
+      useEffect(() => {
+        localStorage.setItem("lang", lang);
+        const url = new URL(window.location);
+        url.searchParams.set("lang", lang);
+        window.history.replaceState({}, "", url);
+      }, [lang]);
+      const t = useCallback((k) => i18n[lang]?.[k] || k, [lang]);
+
+      // Theme
+      const [theme, setTheme] = useState("dark");
+      useEffect(() => {
+        document.body.classList.toggle("theme-light", theme === "light");
+      }, [theme]);
+
+      // Tab
+      const [tab, setTab] = useState("shoot");
+
+      // ---- Shooting Settings ----
+      const [settings, setS] = useState({
+        exposureMode: "m", aperture: 4.0, shutterSec: 1/60, iso: 200, ev: 0,
+        wbK: 5500, brandColor: "neutral", sensor: "full",
+        sharpening: 40, noiseReduction: 20, megapixels: 45,
+      });
+      const [lens, setLens] = useState({
+        value: "prime-35", label: "35mm f/1.4", type: "prime",
+        focalLength: 35, focalMin: 24, focalMax: 70,
+        vignette: 0.3, distortion: 0.05, aberration: 0.15, bokeh: 0.5
+      });
+      const [defects, setDefects] = useState({ dust: 0, scratch: 0, haze: 0, waterdrop: 0 });
+      const [flashSettings, setFlash] = useState({ enabled: false, intensity: 0.9, duration: 120 });
+      const [motionBlur, setMotionBlur] = useState(0);
+      const [composition, setComposition] = useState("thirds");
+      // New shooting settings
+      const [metering, setMetering] = useState("evaluative");
+      const [driveMode, setDriveMode] = useState("single");
+      const [imageStab, setImageStab] = useState(true);
+      const [colorSpace, setColorSpace] = useState("srgb");
+
+      // ---- Post-production Settings ----
+      const [post, setPost] = useState({
+        filterType: "none", brightness: 0, saturation: 0, atmosphere: 0,
+        highlights: 10, shadows: -5, displaySim: "none",
+        toneWarmth: 0, toneSaturation: 0, toneContrast: 0,
+        lightLeakIntensity: 0, lightLeakColor: "rgba(255,120,80,0.6)",
+        lightLeakPositions: LL_COORDS.map(c => ({...c, active: false})),
+        clarity: 0, dehaze: 0, texture: 0,
+      });
+      const [splitToning, setSplitToning] = useState({ hlHue: 40, hlSat: 0, shHue: 220, shSat: 0 });
+      const [grain, setGrain] = useState({ amount: 0, size: 25 });
+      const [portrait, setPortrait] = useState({
+        beautyMode: false, skinSmoothing: 0, eyeBrightening: 0,
+        faceSlimming: 0, teethWhitening: 0, redEyeRemoval: false,
+        portraitBlur: 0, skinToneWarmth: 0,
+        chinAdjust: 0, cheekAdjust: 0, noseThinning: 0,
+        lipEnhance: 0, foreheadAdjust: 0, faceBrightening: 0, jawlineDefine: 0
+      });
+      const [watermark, setWatermark] = useState({ text: "PRO CAMERA SIM", opacity: 0.35, position: "bottom-right", fontSize: 14 });
+      const [zoom, setZoom] = useState(1.0);
+      const [panelOffset, setPanelOffset] = useState(0);
+      const [neuralDenoise, setNeural] = useState({ enabled: false, strength: 0.6 });
+      const [noiseLevel, setNoiseLevel] = useState(0);
+      const [curvePoints, setCurvePoints] = useState(DEFAULT_CURVE.map(p => ({...p})));
+      const [customImage, setCustomImage] = useState(null);
+      const [isLoading, setIsLoading] = useState(false);
+
+      // PWA Install
+      const [deferredPrompt, setDeferredPrompt] = useState(null);
+      const [showInstallBanner, setShowInstallBanner] = useState(false);
+      useEffect(() => {
+        const handler = (e) => { e.preventDefault(); setDeferredPrompt(e); setShowInstallBanner(true); };
+        window.addEventListener('beforeinstallprompt', handler);
+        return () => window.removeEventListener('beforeinstallprompt', handler);
+      }, []);
+      function handleInstall() {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => { setDeferredPrompt(null); setShowInstallBanner(false); });
+      }
+
+      // Shutter speed presets
+      const shutterPresets = [1/8000,1/4000,1/2000,1/1000,1/500,1/250,1/125,1/60,1/30,1/15,1/8,1/4,1/2,1,2,5,10,30];
+
+      // GitHub icon SVG
+      const githubSVG = <svg viewBox="0 0 16 16" style={{width:16,height:16,fill:"currentColor"}}><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>;
+
+      return (
+        <div className="app">
+          {/* ===== Header ===== */}
+          <header className="header">
+            <div className="brand">
+              <div className="logo">
+                <svg viewBox="0 0 24 24" style={{width:18,height:18,fill:"#fff"}}><circle cx="12" cy="12" r="4" opacity="0.9"/><path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 13c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z" opacity="0.7"/></svg>
+              </div>
+              <div>
+                <div className="title">{t("title")}</div>
+                <div className="subtitle">{t("subtitle")}</div>
+              </div>
+            </div>
+            <div className="header-actions">
+              <a href="https://github.com/Lian0123/camera-simulator" target="_blank" rel="noopener noreferrer" className="github-btn" title="GitHub">
+                {githubSVG}
+                <span>{t("githubLink")}</span>
+              </a>
+              <select value={lang} onChange={(e) => setLang(e.target.value)}
+                style={{padding:"5px 10px",borderRadius:8,border:`1px solid var(--border)`,background:"var(--glass)",color:"var(--text)",fontSize:12,cursor:"pointer",minWidth:90}}>
+                <option value="zh-Hant">繁體中文</option>
+                <option value="en">English</option>
+                <option value="ja">日本語</option>
+              </select>
+              <button className="muted-btn theme-btn" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} title={theme === "dark" ? "Light Mode" : "Dark Mode"} style={{padding:"6px 10px",fontSize:14,lineHeight:1}}>
+                {theme === "dark" ? "☀️" : "🌙"}
+              </button>
+            </div>
+          </header>
+
+          {/* PWA Install Banner */}
+          {showInstallBanner && (
+            <div className="pwa-install-banner">
+              <span>📱 {t("installPrompt")}</span>
+              <button className="pwa-install-btn" onClick={handleInstall}>{t("installApp")}</button>
+              <button className="pwa-dismiss-btn" onClick={() => setShowInstallBanner(false)}>{t("dismiss")}</button>
+            </div>
+          )}
+
+          {/* ===== Main Layout ===== */}
+          <main className="layout">
+            {/* Preview Column */}
+            <section className="card">
+              <div className="card-header">
+                <div>
+                  <div className="card-title">{t("livePreview")}</div>
+                  <div className="small">{t("previewDesc")}</div>
+                </div>
+                <div className="badge">{t("interactiveBadge")}</div>
+              </div>
+              <CameraPreview
+                settings={settings} post={post} lens={lens} defects={defects}
+                flashSettings={flashSettings} motionBlur={motionBlur} composition={composition}
+                watermark={watermark} zoom={zoom} neuralDenoise={neuralDenoise} noiseLevel={noiseLevel}
+                grain={grain} portrait={portrait} setZoom={setZoom} customImage={customImage} setCustomImage={setCustomImage}
+                curvePoints={curvePoints} t={t}
+              />
+            </section>
+
+            {/* Controls Column */}
+            <section className="card controls-panel" style={{'--panel-offset': `${panelOffset}px`}}>
+              <div className="card-header">
+                <div style={{flex:1,minWidth:0}}>
+                  <div className="card-title">{t("controls")}</div>
+                  <div className="small">{t("controlsDesc")}</div>
+                </div>
+                <div className="panel-offset-ctrl" style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
+                  <Tooltip text={t("tipPanelOffset")} />
+                  <span className="small" style={{whiteSpace:"nowrap"}}>{t("panelOffset")}</span>
+                  <input type="range" min={0} max={400} step={10} value={panelOffset}
+                    onChange={(e) => setPanelOffset(parseInt(e.target.value))}
+                    style={{width:60}} />
+                  <span className="label-val" style={{minWidth:28,textAlign:"right"}}>{panelOffset}</span>
+                </div>
+              </div>
+              <div className="controls">
+                <div className="tabs">
+                  <button className={"tab " + (tab === "shoot" ? "active" : "")} onClick={() => setTab("shoot")}>{t("shooting")}</button>
+                  <button className={"tab " + (tab === "post" ? "active" : "")} onClick={() => setTab("post")}>{t("editing")}</button>
+                </div>
+
+                {/* ==================== SHOOTING TAB ==================== */}
+                {tab === "shoot" && (
+                  <div className="grid">
+                    {/* Exposure */}
+                    <div className="group">
+                      <div className="group-title">
+                        <span>{t("exposure")}</span>
+                        <button className="reset-btn" onClick={() => setS(s => ({...s, aperture:4, shutterSec:1/125, iso:100, ev:0, wbK:5500}))}>{t("reset")}</button>
+                      </div>
+                      <select value={settings.exposureMode} onChange={(e) => setS(s => ({...s, exposureMode: e.target.value}))} style={{marginBottom:6}}>
+                        <option value="m">M {lang==="zh-Hant"?"手動":"Manual"}</option>
+                        <option value="a">A {lang==="zh-Hant"?"光圈先決":"Aperture Priority"}</option>
+                        <option value="s">S {lang==="zh-Hant"?"快門先決":"Shutter Priority"}</option>
+                        <option value="p">P {lang==="zh-Hant"?"程式自動":"Program Auto"}</option>
+                      </select>
+                      <Slider label={t("aperture")} value={settings.aperture} min={0.9} max={50} step={0.1}
+                        onChange={(v) => setS(s => ({...s, aperture: v}))} format={(v) => `f/${v.toFixed(1)}`} tip={t("tipAperture")} />
+                      <div style={{marginBottom:6}}>
+                        <div className="label-row" style={{marginBottom:4}}>
+                          <div style={{display:"flex",gap:4,alignItems:"center"}}>
+                            <span>{t("shutterSpeed")}</span>
+                            <Tooltip text={t("tipShutter")} />
+                          </div>
+                        </div>
+                        <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+                          {shutterPresets.map(v => {
+                            const lbl = v < 1 ? `1/${Math.round(1/v)}` : `${v}s`;
+                            const active = v < 1 ? Math.abs(settings.shutterSec - v) < 0.0001 : Math.abs(settings.shutterSec - v) < 0.01;
+                            return <button key={lbl} className={"tag " + (active?"active":"")}
+                              onClick={() => setS(s => ({...s, shutterSec: v}))} style={{fontSize:10,padding:"3px 7px"}}>{lbl}</button>;
+                          })}
+                        </div>
+                      </div>
+                      <Slider label={t("iso")} value={settings.iso} min={50} max={102400} step={1}
+                        onChange={(v) => setS(s => ({...s, iso: Math.round(v)}))} format={(v) => Math.round(v)} tip={t("tipISO")} />
+                      <Slider label={t("ev")} value={settings.ev} min={-5} max={5} step={0.1}
+                        onChange={(v) => setS(s => ({...s, ev: v}))} format={(v) => (v>0?"+":"") + v.toFixed(1)} tip={t("tipEV")} />
+                      <Slider label={t("whiteBalance")} value={settings.wbK} min={2500} max={9000} step={100}
+                        onChange={(v) => setS(s => ({...s, wbK: v}))} format={(v) => `${Math.round(v)}K`} tip={t("tipWB")} />
+                      <div style={{marginTop:4}}>
+                        <div className="label-row" style={{marginBottom:4}}><span>{t("brandColor")}</span></div>
+                        <div className="tag-row">
+                          {["neutral","nikon","canon","fuji","leica","sony"].map(b => (
+                            <button key={b} className={"tag " + (settings.brandColor===b?"active":"")}
+                              onClick={() => setS(s => ({...s, brandColor: b}))} style={{fontSize:10}}>{b}</button>
+                          ))}
+                        </div>
+                      </div>
+                      <div style={{marginTop:6}}>
+                        <select value={settings.sensor} onChange={(e) => setS(s => ({...s, sensor: e.target.value}))}>
+                          <option value="medium">{lang==="zh-Hant"?"中畫幅":"Medium Format"}</option>
+                          <option value="full">{lang==="zh-Hant"?"全幅":"Full Frame"}</option>
+                          <option value="aps">APS-C</option>
+                          <option value="m43">M4/3</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Lens & DOF */}
+                    <div className="group">
+                      <div className="group-title">
+                        <span>{t("lensOptics")}</span>
+                        <button className="reset-btn" onClick={() => setLens({value:"prime-35",label:"35mm f/1.4",type:"prime",focalLength:35,focalMin:24,focalMax:70,vignette:0.3,distortion:0.05,aberration:0.15,bokeh:0.5})}>{t("reset")}</button>
+                      </div>
+                      <Slider label={t("focalLength")} value={lens.focalLength} min={8} max={800} step={1}
+                        onChange={(v) => setLens(l => ({...l, focalLength: v}))} format={(v) => `${Math.round(v)}mm`} />
+                      <Slider label={t("vignette")} value={lens.vignette} min={0} max={1} step={0.01}
+                        onChange={(v) => setLens(l => ({...l, vignette: v}))} format={(v) => v.toFixed(2)} />
+                      <Slider label={t("distortion")} value={lens.distortion} min={-1} max={1} step={0.01}
+                        onChange={(v) => setLens(l => ({...l, distortion: v}))} format={(v) => v.toFixed(2)} />
+                      <Slider label={t("aberration")} value={lens.aberration} min={0} max={1} step={0.01}
+                        onChange={(v) => setLens(l => ({...l, aberration: v}))} format={(v) => v.toFixed(2)} />
+                      <Slider label={t("bokeh")} value={lens.bokeh} min={0} max={1} step={0.01}
+                        onChange={(v) => setLens(l => ({...l, bokeh: v}))} format={(v) => v.toFixed(2)} />
+                      <Slider label={t("megapixels")} value={settings.megapixels} min={1} max={45} step={1}
+                        onChange={(v) => setS(s => ({...s, megapixels: Math.round(v)}))} format={(v) => `${Math.round(v)} MP`} />
+                    </div>
+
+                    {/* New: Metering, Drive, Stabilization, Color Space */}
+                    <div className="group">
+                      <div className="group-title"><span>{t("metering")}</span></div>
+                      <div className="tag-row" style={{marginBottom:8}}>
+                        {["evaluative","centerWeighted","spot"].map(m => (
+                          <button key={m} className={"tag " + (metering===m?"active":"")}
+                            onClick={() => setMetering(m)} style={{fontSize:10}}>{t(m)}</button>
+                        ))}
+                      </div>
+                      <div className="group-title"><span>{t("driveMode")}</span></div>
+                      <div className="tag-row" style={{marginBottom:8}}>
+                        {["single","contLow","contHigh","timer"].map(d => (
+                          <button key={d} className={"tag " + (driveMode===d?"active":"")}
+                            onClick={() => setDriveMode(d)} style={{fontSize:10}}>{t(d)}</button>
+                        ))}
+                      </div>
+                      <Toggle label={t("imageStab")} value={imageStab} onChange={setImageStab} />
+                      <div style={{marginTop:6}}>
+                        <div className="label-row" style={{marginBottom:4}}><span>{t("colorSpace")}</span></div>
+                        <div className="tag-row">
+                          {["srgb","adobeRGB","prophotoRGB"].map(cs => (
+                            <button key={cs} className={"tag " + (colorSpace===cs?"active":"")}
+                              onClick={() => setColorSpace(cs)} style={{fontSize:10}}>{cs === "srgb" ? "sRGB" : cs === "adobeRGB" ? "Adobe RGB" : "ProPhoto RGB"}</button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Flash & Motion */}
+                    <div className="group">
+                      <div className="group-title"><span>{t("flashSettings")}</span></div>
+                      <Toggle label={t("enableFlash")} value={flashSettings.enabled} onChange={(v) => setFlash(f => ({...f, enabled: v}))} />
+                      <Slider label={t("flashBrightness")} value={flashSettings.intensity} min={0} max={2} step={0.01}
+                        onChange={(v) => setFlash(f => ({...f, intensity: v}))} format={(v) => v.toFixed(2)} />
+                      <Slider label={t("flashTime")} value={flashSettings.duration} min={10} max={2000} step={10}
+                        onChange={(v) => setFlash(f => ({...f, duration: v}))} format={(v) => `${Math.round(v)}ms`} />
+                      <button className="muted-btn" onClick={() => window._triggerFlash?.()} style={{width:"100%",marginTop:4}}>
+                        🔦 {t("testFlash")}
+                      </button>
+                      <div style={{marginTop:8}}>
+                        <Slider label={t("motionBlur")} value={motionBlur} min={0} max={1} step={0.01} onChange={setMotionBlur} format={(v) => v.toFixed(2)} />
+                      </div>
+                      <div style={{marginTop:6}}>
+                        <div className="label-row" style={{marginBottom:4}}><span>{t("compositionGuide")}</span></div>
+                        <div className="tag-row">
+                          {["off","thirds","golden","diagonal"].map(c => (
+                            <button key={c} className={"tag " + (composition===c?"active":"")}
+                              onClick={() => setComposition(c)} style={{fontSize:10}}>{t(c)}</button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Defects */}
+                    <div className="group">
+                      <div className="group-title">
+                        <span>{t("defects")}</span>
+                        <button className="reset-btn" onClick={() => setDefects({dust:0,scratch:0,haze:0,waterdrop:0})}>{t("reset")}</button>
+                      </div>
+                      <Slider label={t("dust")} value={defects.dust} min={0} max={1} step={0.01}
+                        onChange={(v) => setDefects(d => ({...d, dust: v}))} format={(v) => v.toFixed(2)} />
+                      <Slider label={t("scratch")} value={defects.scratch} min={0} max={1} step={0.01}
+                        onChange={(v) => setDefects(d => ({...d, scratch: v}))} format={(v) => v.toFixed(2)} />
+                      <Slider label={t("haze")} value={defects.haze} min={0} max={1} step={0.01}
+                        onChange={(v) => setDefects(d => ({...d, haze: v}))} format={(v) => v.toFixed(2)} />
+                      <Slider label={t("waterdrop")} value={defects.waterdrop} min={0} max={1} step={0.01}
+                        onChange={(v) => setDefects(d => ({...d, waterdrop: v}))} format={(v) => v.toFixed(2)} />
+                    </div>
+                  </div>
+                )}
+
+                {/* ==================== POST-PRODUCTION TAB ==================== */}
+                {tab === "post" && (
+                  <div className="grid">
+                    {/* Global Tone */}
+                    <div className="group">
+                      <div className="group-title">
+                        <span>{t("globalTone")}</span>
+                        <button className="reset-btn" onClick={() => setPost(p => ({...p, brightness:0, highlights:10, shadows:-5, atmosphere:0}))}>{t("reset")}</button>
+                      </div>
+                      <Slider label={t("postBrightness")} value={post.brightness} min={-50} max={50} step={1} onChange={(v) => setPost(p => ({...p, brightness: v}))} />
+                      <Slider label={t("highlights")} value={post.highlights} min={-50} max={50} step={1} onChange={(v) => setPost(p => ({...p, highlights: v}))} />
+                      <Slider label={t("shadows")} value={post.shadows} min={-50} max={50} step={1} onChange={(v) => setPost(p => ({...p, shadows: v}))} />
+                      <Slider label={t("atmosphere")} value={post.atmosphere} min={-50} max={50} step={1} onChange={(v) => setPost(p => ({...p, atmosphere: v}))} />
+                    </div>
+
+                    {/* Clarity / Dehaze / Texture (NEW) */}
+                    <div className="group">
+                      <div className="group-title"><span>{t("clarity")} / {t("dehaze")} / {t("texture")}</span></div>
+                      <Slider label={t("clarity")} value={post.clarity} min={-100} max={100} step={1}
+                        onChange={(v) => setPost(p => ({...p, clarity: v}))} format={(v) => (v>0?"+":"") + v} tip={t("tipClarity")} />
+                      <Slider label={t("dehaze")} value={post.dehaze} min={-100} max={100} step={1}
+                        onChange={(v) => setPost(p => ({...p, dehaze: v}))} format={(v) => (v>0?"+":"") + v} tip={t("tipDehaze")} />
+                      <Slider label={t("texture")} value={post.texture} min={-100} max={100} step={1}
+                        onChange={(v) => setPost(p => ({...p, texture: v}))} format={(v) => (v>0?"+":"") + v} tip={t("tipTexture")} />
+                    </div>
+
+                    {/* Tone Adjustment */}
+                    <div className="group">
+                      <div className="group-title"><span>{t("toneAdjust")}</span></div>
+                      <Slider label={t("warmth")} value={post.toneWarmth} min={-100} max={100} step={1}
+                        onChange={(v) => setPost(p => ({...p, toneWarmth: v}))} format={(v) => (v>0?"+":"") + v} />
+                      <Slider label={t("saturation")} value={post.toneSaturation} min={-100} max={100} step={1}
+                        onChange={(v) => setPost(p => ({...p, toneSaturation: v}))} format={(v) => (v>0?"+":"")+v+"%"} />
+                      <Slider label={t("contrast")} value={post.toneContrast} min={-50} max={50} step={1}
+                        onChange={(v) => setPost(p => ({...p, toneContrast: v}))} format={(v) => (v>0?"+":"")+v+"%"} />
+                    </div>
+
+                    {/* Split Toning (NEW) */}
+                    <div className="group">
+                      <div className="group-title">
+                        <span>{t("splitToning")}</span>
+                        <Tooltip text={t("tipSplitTone")} />
+                      </div>
+                      <Slider label={t("hlHue")} value={splitToning.hlHue} min={0} max={360} step={1}
+                        onChange={(v) => setSplitToning(s => ({...s, hlHue: v}))} format={(v) => `${v}°`} />
+                      <Slider label={t("hlSat")} value={splitToning.hlSat} min={0} max={100} step={1}
+                        onChange={(v) => setSplitToning(s => ({...s, hlSat: v}))} format={(v) => v + "%"} />
+                      <Slider label={t("shHue")} value={splitToning.shHue} min={0} max={360} step={1}
+                        onChange={(v) => setSplitToning(s => ({...s, shHue: v}))} format={(v) => `${v}°`} />
+                      <Slider label={t("shSat")} value={splitToning.shSat} min={0} max={100} step={1}
+                        onChange={(v) => setSplitToning(s => ({...s, shSat: v}))} format={(v) => v + "%"} />
+                    </div>
+
+                    {/* Portrait Processing */}
+                    <div className="group">
+                      <div className="group-title">
+                        <span>{t("portrait")}</span>
+                        <button className="reset-btn" onClick={() => setPortrait({beautyMode:false,skinSmoothing:0,eyeBrightening:0,faceSlimming:0,teethWhitening:0,redEyeRemoval:false,portraitBlur:0,skinToneWarmth:0,chinAdjust:0,cheekAdjust:0,noseThinning:0,lipEnhance:0,foreheadAdjust:0,faceBrightening:0,jawlineDefine:0})}>{t("reset")}</button>
+                      </div>
+                      <Toggle label={t("beautyMode")} value={portrait.beautyMode} onChange={(v) => setPortrait(p => ({...p, beautyMode: v}))} />
+                      {portrait.beautyMode && <>
+                        <Slider label={t("skinSmoothing")} value={portrait.skinSmoothing} min={0} max={100} step={1}
+                          onChange={(v) => setPortrait(p => ({...p, skinSmoothing: v}))} tip={t("tipSkinSmooth")} />
+                        <Slider label={t("eyeBrightening")} value={portrait.eyeBrightening} min={0} max={100} step={1}
+                          onChange={(v) => setPortrait(p => ({...p, eyeBrightening: v}))} tip={t("tipEyeBright")} />
+                        <Slider label={t("faceSlimming")} value={portrait.faceSlimming} min={0} max={100} step={1}
+                          onChange={(v) => setPortrait(p => ({...p, faceSlimming: v}))} tip={t("tipFaceSlim")} />
+                        <Slider label={t("teethWhitening")} value={portrait.teethWhitening} min={0} max={100} step={1}
+                          onChange={(v) => setPortrait(p => ({...p, teethWhitening: v}))} tip={t("tipTeethWhite")} />
+                        <Slider label={t("skinToneWarmth")} value={portrait.skinToneWarmth} min={-100} max={100} step={1}
+                          onChange={(v) => setPortrait(p => ({...p, skinToneWarmth: v}))} format={(v) => (v>0?"+":"")+v} tip={t("tipSkinTone")} />
+                        <Toggle label={t("redEyeRemoval")} value={portrait.redEyeRemoval} onChange={(v) => setPortrait(p => ({...p, redEyeRemoval: v}))} />
+                        <Slider label={t("portraitBlur")} value={portrait.portraitBlur} min={0} max={100} step={1}
+                          onChange={(v) => setPortrait(p => ({...p, portraitBlur: v}))} tip={t("tipPortraitBlur")} />
+                        <Slider label={t("chinAdjust")} value={portrait.chinAdjust} min={-100} max={100} step={1}
+                          onChange={(v) => setPortrait(p => ({...p, chinAdjust: v}))} format={(v) => (v>0?"+":"")+v} tip={t("tipChinAdjust")} />
+                        <Slider label={t("cheekAdjust")} value={portrait.cheekAdjust} min={-100} max={100} step={1}
+                          onChange={(v) => setPortrait(p => ({...p, cheekAdjust: v}))} format={(v) => (v>0?"+":"")+v} tip={t("tipCheekAdjust")} />
+                        <Slider label={t("noseThinning")} value={portrait.noseThinning} min={0} max={100} step={1}
+                          onChange={(v) => setPortrait(p => ({...p, noseThinning: v}))} tip={t("tipNoseThinning")} />
+                        <Slider label={t("lipEnhance")} value={portrait.lipEnhance} min={0} max={100} step={1}
+                          onChange={(v) => setPortrait(p => ({...p, lipEnhance: v}))} tip={t("tipLipEnhance")} />
+                        <Slider label={t("foreheadAdjust")} value={portrait.foreheadAdjust} min={-100} max={100} step={1}
+                          onChange={(v) => setPortrait(p => ({...p, foreheadAdjust: v}))} format={(v) => (v>0?"+":"")+v} tip={t("tipForeheadAdjust")} />
+                        <Slider label={t("faceBrightening")} value={portrait.faceBrightening} min={0} max={100} step={1}
+                          onChange={(v) => setPortrait(p => ({...p, faceBrightening: v}))} tip={t("tipFaceBrightening")} />
+                        <Slider label={t("jawlineDefine")} value={portrait.jawlineDefine} min={0} max={100} step={1}
+                          onChange={(v) => setPortrait(p => ({...p, jawlineDefine: v}))} tip={t("tipJawlineDefine")} />
+                      </>}
+                    </div>
+
+                    {/* Display & Filters */}
+                    <div className="group">
+                      <div className="group-title">
+                        <span>{t("displayFilm")}</span>
+                        <button className="reset-btn" onClick={() => setPost(p => ({...p, displaySim:"none", filterType:"none"}))}>{t("reset")}</button>
+                      </div>
+                      <div style={{marginBottom:6}}>
+                        <div className="label-row" style={{marginBottom:3}}><span>{t("displaySim")}</span></div>
+                        <select value={post.displaySim} onChange={(e) => setPost(p => ({...p, displaySim: e.target.value}))}>
+                          <option value="none">{t("none")}</option>
+                          <option value="oled">{t("oled")}</option>
+                          <option value="qled">{t("qled")}</option>
+                          <option value="miniled">{t("miniled")}</option>
+                        </select>
+                      </div>
+                      <div>
+                        <div className="label-row" style={{marginBottom:3}}><span>{t("filterType")}</span></div>
+                        <select value={post.filterType} onChange={(e) => setPost(p => ({...p, filterType: e.target.value}))}>
+                          {[
+                            ["none","none"],["bw","bw"],["vintage","vintage"],["hdr","hdr"],
+                            ["cinematic","cinematic"],["cross","crossProcess"],["bleach","bleachBypass"],
+                            ["lomo","lomo"],["film-portra","filmPortra"],["film-tri-x","filmTriX"],
+                            ["warm-film","warmFilm"],["cool-tone","coolTone"],["moody","moody"],
+                            ["dreamy","dreamy"],["noir","noir"],["fade","fade"],
+                            ["vibrant","vibrant"],["retro","retro"]
+                          ].map(([val, key]) => (
+                            <option key={val} value={val}>{t(key)}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Grain (NEW) */}
+                    <div className="group">
+                      <div className="group-title">
+                        <span>{t("grain")}</span>
+                        <Tooltip text={t("tipGrain")} />
+                      </div>
+                      <Slider label={t("grainAmount")} value={grain.amount} min={0} max={1} step={0.01}
+                        onChange={(v) => setGrain(g => ({...g, amount: v}))} format={(v) => v.toFixed(2)} />
+                      <Slider label={t("grainSize")} value={grain.size} min={1} max={100} step={1}
+                        onChange={(v) => setGrain(g => ({...g, size: v}))} format={(v) => v} />
+                    </div>
+
+                    {/* Detail & Curve */}
+                    <div className="group" style={{gridColumn: "1 / -1"}}>
+                      <div className="group-title">
+                        <span>{t("detailCurve")}</span>
+                        <button className="reset-btn" onClick={() => {
+                          setS(s => ({...s, sharpening: 40, noiseReduction: 20}));
+                          setCurvePoints(DEFAULT_CURVE.map(p => ({...p})));
+                        }}>{t("reset")}</button>
+                      </div>
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                        <div>
+                          <Slider label={t("sharpen")} value={settings.sharpening} min={0} max={100} step={1}
+                            onChange={(v) => setS(s => ({...s, sharpening: v}))} />
+                          <Slider label={t("noiseReduction")} value={settings.noiseReduction} min={0} max={100} step={1}
+                            onChange={(v) => setS(s => ({...s, noiseReduction: v}))} />
+                          <Slider label={t("noiseIntensity")} value={noiseLevel} min={0} max={1} step={0.01}
+                            onChange={setNoiseLevel} format={(v) => v.toFixed(2)} />
+                          <div style={{marginTop:4}}>
+                            <div className="label-row" style={{marginBottom:3}}><span>{t("neuralDenoise")}</span></div>
+                            <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                              <button className={"tag " + (neuralDenoise.enabled?"active":"")} onClick={() => setNeural(n => ({...n, enabled: !n.enabled}))} style={{fontSize:10}}>
+                                {neuralDenoise.enabled ? t("enabled") : t("disabled")}
+                              </button>
+                              <input type="range" min={0} max={1} step={0.01} value={neuralDenoise.strength}
+                                onChange={(e) => setNeural(n => ({...n, strength: parseFloat(e.target.value)}))}
+                                style={{flex:1}} />
+                              <span className="small">{neuralDenoise.strength.toFixed(2)}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="label-row" style={{marginBottom:4}}>
+                            <span>{t("curveAdjust")}</span>
+                            <Tooltip text={t("tipCurve")} />
+                          </div>
+                          <CurveEditor curvePoints={curvePoints} setCurvePoints={setCurvePoints} t={t} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Light Leak */}
+                    <div className="group">
+                      <div className="group-title"><span>{t("lightLeak")}</span></div>
+                      <Slider label={t("lightLeakIntensity")} value={post.lightLeakIntensity} min={0} max={1} step={0.01}
+                        onChange={(v) => setPost(p => ({...p, lightLeakIntensity: v}))} format={(v) => v.toFixed(2)} />
+                      <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:6}}>
+                        <input type="color" value={rgbToHex(post.lightLeakColor)}
+                          onChange={(e) => setPost(p => ({...p, lightLeakColor: hexToRgba(e.target.value, 0.6)}))} />
+                        <span className="small">{t("lightLeakColor")}</span>
+                      </div>
+                      <div className="label-row" style={{marginBottom:4}}><span>{t("lightLeakPos")}</span></div>
+                      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:4}}>
+                        {WM_POS_I18N_KEYS.map((key, idx) => (
+                          <button key={idx} className={"tag " + (post.lightLeakPositions[idx]?.active ? "active" : "")}
+                            onClick={() => {
+                              const np = post.lightLeakPositions.map((p,i) => i===idx ? {...p, active: !p.active} : p);
+                              setPost(p => ({...p, lightLeakPositions: np}));
+                            }} style={{fontSize:10}}>{t(key)}</button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Watermark */}
+                    <div className="group">
+                      <div className="group-title">
+                        <span>{t("watermark")}</span>
+                        <button className="reset-btn" onClick={() => setWatermark({text:"PRO CAMERA SIM",opacity:0.35,position:"bottom-right",fontSize:14})}>{t("reset")}</button>
+                      </div>
+                      <input type="text" placeholder={t("watermarkText")} value={watermark.text}
+                        onChange={(e) => setWatermark(w => ({...w, text: e.target.value}))} style={{marginBottom:6}} />
+                      <Slider label={t("watermarkOpacity")} value={watermark.opacity} min={0.05} max={0.9} step={0.01}
+                        onChange={(v) => setWatermark(w => ({...w, opacity: v}))} format={(v) => v.toFixed(2)} />
+                      <Slider label={t("watermarkSize")} value={watermark.fontSize} min={10} max={48} step={1}
+                        onChange={(v) => setWatermark(w => ({...w, fontSize: v}))} format={(v) => `${v}px`} />
+                      <div className="label-row" style={{marginBottom:4}}><span>{t("watermarkPos")}</span></div>
+                      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:4}}>
+                        {WM_POSITIONS.map((pos, idx) => (
+                          <button key={pos} className={"tag " + (watermark.position===pos?"active":"")}
+                            onClick={() => setWatermark(w => ({...w, position: pos}))} style={{fontSize:10}}>{t(WM_POS_I18N_KEYS[idx])}</button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Export */}
+                    <div className="group" style={{gridColumn: "1 / -1"}}>
+                      <div className="group-title"><span>{t("exportSection")}</span></div>
+                      <ExportControls
+                        settings={settings} post={post} lens={lens} defects={defects} flashSettings={flashSettings}
+                        motionBlur={motionBlur} watermark={watermark} curvePoints={curvePoints} zoom={zoom}
+                        neuralDenoise={neuralDenoise} noiseLevel={noiseLevel} grain={grain} portrait={portrait}
+                        customImage={customImage} isLoading={isLoading} setIsLoading={setIsLoading} t={t}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+          </main>
+
+          <footer>
+            <span>{t("footerSource")}</span>
+            <span>{t("footerNote")}</span>
+          </footer>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Pro Camera Simulator",
+    "alternateName": "專業相機模擬器",
+    "description": "專業相機模擬器，提供光圈、快門、ISO、焦距、漏光、降噪、人像美顏（磨皮、瘦臉、亮眼、美白牙齒、去紅眼、下巴調整、臉頰比例、瘦鼻、嘴唇調整、額頭調整、面部提亮、下顎線條）等完整攝影設置模擬與後製功能。支援 PWA 安裝、繁體中文/英文/日文多語言。",
+    "url": "https://lian0123.github.io/camera-simulator/",
+    "applicationCategory": "PhotographyApplication",
+    "operatingSystem": "Web Browser, iOS, Android",
+    "inLanguage": ["zh-Hant", "en", "ja"],
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "author": {
+      "@type": "Person",
+      "name": "Lian0123",
+      "url": "https://github.com/Lian0123"
+    },
+    "screenshot": "https://lian0123.github.io/camera-simulator/",
+    "softwareVersion": "0.0.4",
+    "featureList": [
+      "即時攝影參數模擬",
+      "SVG 曲線調整",
+      "多語言支援 (繁中/英/日)",
+      "分離色調",
+      "顆粒模擬",
+      "清晰度/去霧/紋理控制",
+      "人像美顏處理（磨皮、瘦臉、亮眼、美白牙齒、去紅眼、下巴調整、臉頰比例、瘦鼻、嘴唇調整、額頭調整、面部提亮、下顎線條）",
+      "背景虛化模擬",
+      "PWA 離線安裝",
+      "閃光燈模擬",
+      "漏光效果",
+      "18種濾鏡效果",
+      "PNG/JSON 匯出"
+    ],
+    "browserRequirements": "Requires a modern web browser with JavaScript enabled"
+  }
+  </script>
+</body>
+</html>
