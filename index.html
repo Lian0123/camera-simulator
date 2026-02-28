@@ -43,7 +43,8 @@
   <link rel="canonical" href="https://lian0123.github.io/camera-simulator/" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%234f8cff' width='100' height='100' rx='20'/><circle cx='50' cy='50' r='22' fill='none' stroke='%23fff' stroke-width='4' opacity='0.6'/><circle cx='50' cy='50' r='8' fill='%23fff' opacity='0.4'/></svg>" />
-  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect fill='%234f8cff' width='180' height='180' rx='36'/%3E%3Ccircle cx='90' cy='90' r='40' fill='none' stroke='%23fff' stroke-width='6' opacity='0.9'/%3E%3Ccircle cx='90' cy='90' r='14' fill='%23fff' opacity='0.5'/%3E%3C/svg%3E" />
+  <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="./icon-512.png" />
 
   <!-- React Production & Babel -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
@@ -326,6 +327,16 @@
     .pwa-install-banner button { padding: 6px 16px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 12px; }
     .pwa-install-btn { background: #fff; color: var(--accent); }
     .pwa-dismiss-btn { background: rgba(255,255,255,0.2); color: #fff; }
+    .pwa-update-banner {
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      background: linear-gradient(135deg, #ff6b35, #ff3366);
+      color: #fff; padding: 10px 20px; border-radius: 10px;
+      display: flex; align-items: center; gap: 10px; z-index: 1001;
+      box-shadow: 0 6px 24px rgba(255,107,53,0.4); font-size: 12px;
+      animation: slideDown 0.4s ease-out;
+    }
+    .pwa-update-banner button { padding: 5px 14px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; font-size: 11px; background: #fff; color: #ff6b35; }
+    @keyframes slideDown { from { transform: translateX(-50%) translateY(-100px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
     @keyframes slideUp { from { transform: translateX(-50%) translateY(100px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
   </style>
 
@@ -334,8 +345,31 @@
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('SW registered:', reg.scope))
+          .then(reg => {
+            console.log('SW registered:', reg.scope);
+            // Check for updates every 60 minutes
+            setInterval(() => reg.update(), 60 * 60 * 1000);
+            // Listen for waiting SW (new version available)
+            reg.addEventListener('updatefound', () => {
+              const newSW = reg.installing;
+              if (!newSW) return;
+              newSW.addEventListener('statechange', () => {
+                if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+                  // New SW installed, show update prompt
+                  window._swUpdateAvailable = true;
+                  window.dispatchEvent(new Event('swUpdate'));
+                }
+              });
+            });
+          })
           .catch(err => console.warn('SW registration failed:', err));
+        // Reload page when new SW takes control
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (refreshing) return;
+          refreshing = true;
+          window.location.reload();
+        });
       });
     }
   </script>
@@ -1515,15 +1549,32 @@
       // PWA Install
       const [deferredPrompt, setDeferredPrompt] = useState(null);
       const [showInstallBanner, setShowInstallBanner] = useState(false);
+      const [showUpdateBanner, setShowUpdateBanner] = useState(false);
       useEffect(() => {
         const handler = (e) => { e.preventDefault(); setDeferredPrompt(e); setShowInstallBanner(true); };
         window.addEventListener('beforeinstallprompt', handler);
-        return () => window.removeEventListener('beforeinstallprompt', handler);
+        // Listen for SW update
+        const updateHandler = () => setShowUpdateBanner(true);
+        window.addEventListener('swUpdate', updateHandler);
+        // Check if update was already found before React mounted
+        if (window._swUpdateAvailable) setShowUpdateBanner(true);
+        return () => {
+          window.removeEventListener('beforeinstallprompt', handler);
+          window.removeEventListener('swUpdate', updateHandler);
+        };
       }, []);
       function handleInstall() {
         if (!deferredPrompt) return;
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then(() => { setDeferredPrompt(null); setShowInstallBanner(false); });
+      }
+      function handleUpdate() {
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.ready.then((reg) => {
+            if (reg.waiting) reg.waiting.postMessage('skipWaiting');
+          });
+        }
+        setShowUpdateBanner(false);
       }
 
       // Shutter speed presets
@@ -1568,6 +1619,15 @@
               <span>📱 {t("installPrompt")}</span>
               <button className="pwa-install-btn" onClick={handleInstall}>{t("installApp")}</button>
               <button className="pwa-dismiss-btn" onClick={() => setShowInstallBanner(false)}>{t("dismiss")}</button>
+            </div>
+          )}
+
+          {/* PWA Update Banner */}
+          {showUpdateBanner && (
+            <div className="pwa-update-banner">
+              <span>🔄 {lang === "ja" ? "新しいバージョンが利用可能です" : lang === "en" ? "A new version is available" : "有新版本可用"}</span>
+              <button onClick={handleUpdate}>{lang === "ja" ? "更新" : lang === "en" ? "Update" : "更新"}</button>
+              <button style={{background:"rgba(255,255,255,0.2)",color:"#fff"}} onClick={() => setShowUpdateBanner(false)}>{t("dismiss")}</button>
             </div>
           )}
 
