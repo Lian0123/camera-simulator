@@ -35,7 +35,7 @@ npm run build
 
 ## GitHub Pages
 
-The Vite build uses the project path `/camera-simulator/`. The GitHub Actions workflow validates pull requests and deploys successful commits on `main` to Pages. Set the repository’s Pages source to **GitHub Actions** once in repository settings.
+The Vite build uses the project path `/camera-simulator/`. The GitHub Actions workflow validates pull requests and deploys successful commits on `main` to Pages. The repository’s Pages source is configured for **GitHub Actions**.
 
 ## Photo asset notes
 

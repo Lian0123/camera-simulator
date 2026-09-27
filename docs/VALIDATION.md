@@ -13,4 +13,6 @@ The Playwright server serves the built `dist` output at the `/camera-simulator/`
 
 Latest local run: `npm run typecheck`, `npm test` (13 tests), `npm run build`, and `npm run test:e2e -- --workers=1` all passed. The browser suite reported 35 passed and 15 expected skips across five projects. Skips are browser/device-specific checks that run in their designated project.
 
+The same checks passed in [GitHub Actions](https://github.com/Lian0123/camera-simulator/actions/runs/36343407574). After deployment, `https://lian0123.github.io/camera-simulator/` returned HTTP 200 and referenced its JavaScript and CSS beneath `/camera-simulator/assets/`.
+
 `docs/screenshots/` contains captured desktop and mobile layouts. No physical phone or hardware camera was available in this automated run; those remain manual acceptance checks.

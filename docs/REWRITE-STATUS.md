@@ -8,7 +8,7 @@ This is the implementation record for the camera-studio rewrite. It separates sh
 | 2. Camera core and first scene | Core workflow implemented | EV100 solver, P / A / S / M and Auto ISO, exposure meter, capture, IndexedDB playback, editing, and local export. Unit tests cover one-stop changes and exposure modes. |
 | 3. Sources and scenes | Partial | 2D photographic plates, imported images, camera access and fallback, and a WebGL viewfinder are wired up. The WebGL stage still uses a photographic plane rather than relightable 3D models; the built-in 2D photographs are not separated depth layers. |
 | 4. Photo workflow | Implemented with limits | Local capture restore, side-by-side comparison, editing presets, sliders, reset / undo / redo, versioned settings, crop-aware PNG / JPEG export and optional watermark are present. Physical-camera depth is not inferred. |
-| 5. PWA, QA, and Pages | Build and offline QA implemented; deployment pending | Hashed app-shell and scene assets are precached, updates wait for user confirmation, and Pages Actions deploys `main`. Publication depends on a successful push and the repository Pages source being set to GitHub Actions. |
+| 5. PWA, QA, and Pages | Deployed | Hashed app-shell and scene assets are precached, updates wait for user confirmation, the GitHub Actions build and browser suite passed, and Pages returned HTTP 200 at the target project URL. See [the successful workflow run](https://github.com/Lian0123/camera-simulator/actions/runs/36343407574). |
 
 ## Work that remains before this meets the complete brief
 
