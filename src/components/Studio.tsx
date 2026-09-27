@@ -397,7 +397,20 @@ export function Studio() {
       if (renderedStage?.width && renderedStage.height) return renderedStage;
       return imageFromUrl(scene.stageImage);
     }
-    return imageFromUrl(scene.image);
+    const layeredStage = document.querySelector<HTMLCanvasElement>('.layered-scene');
+    if (layeredStage?.width && layeredStage.height && layeredStage.dataset.ready === 'true') return layeredStage;
+    if (layeredStage) {
+      await new Promise<void>((resolve) => {
+        const started = performance.now();
+        const ready = () => {
+          if (layeredStage.dataset.ready === 'true' || layeredStage.dataset.ready === 'error' || performance.now() - started > 5000) resolve();
+          else requestAnimationFrame(ready);
+        };
+        ready();
+      });
+      if (layeredStage.dataset.ready === 'true') return layeredStage;
+    }
+    return imageFromUrl(scene.stageImage);
   };
 
   const capture = async () => {
@@ -505,7 +518,7 @@ export function Studio() {
 
   const displayRecord = activeRecord;
   const displayScene = scene;
-  const shownHistogram = workspace === 'playback' || workspace === 'edit' ? displayRecord?.image ?? null : source === 'upload' ? customImage?.src ?? null : displayScene.image;
+  const shownHistogram = workspace === 'playback' || workspace === 'edit' ? displayRecord?.image ?? null : source === 'upload' ? customImage?.src ?? null : source === 'scene2d' || source === 'scene3d' ? displayScene.stageImage : displayScene.image;
   const currentExposure = workspace === 'playback' && activeRecord ? activeRecord.exposure : exposure;
 
   return <main className="studio-shell">

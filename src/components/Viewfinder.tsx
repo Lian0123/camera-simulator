@@ -4,6 +4,7 @@ import type { CameraSettings, ResolvedExposure, SceneDefinition, SourceKind } fr
 import { formatShutter } from '../camera/exposure';
 import { isoNoiseAmount, makeImageFilter, type DevelopSettings } from '../camera/processor';
 import { imageFromUrl } from '../camera/scenes';
+import { LayeredSceneCanvas } from './LayeredSceneCanvas';
 
 const ThreePhotoStage = lazy(() => import('./ThreePhotoStage').then((module) => ({ default: module.ThreePhotoStage })));
 
@@ -35,7 +36,7 @@ export function Viewfinder({ scene, source, customImage, videoRef, stream, camer
     let active = true;
     const key = `${source}:${scene.id}`;
     setSceneImage(null);
-    void imageFromUrl(source === 'scene3d' ? scene.stageImage : scene.image).then((image) => { if (active) setSceneImage({ key, image }); }).catch(() => setError('Could not load this scene.'));
+    void imageFromUrl(scene.stageImage).then((image) => { if (active) setSceneImage({ key, image }); }).catch(() => setError('Could not load this scene.'));
     return () => { active = false; };
   }, [scene, source]);
 
@@ -51,7 +52,9 @@ export function Viewfinder({ scene, source, customImage, videoRef, stream, camer
     const context = canvas.getContext('2d', { willReadFrequently: true });
     if (!context) return;
     const updateMask = () => {
-      const input: CanvasImageSource | null = source === 'camera' ? (videoRef.current && videoRef.current.readyState >= 2 ? videoRef.current : null) : image;
+      const input: CanvasImageSource | null = source === 'camera'
+        ? (videoRef.current && videoRef.current.readyState >= 2 ? videoRef.current : null)
+        : source === 'scene2d' ? document.querySelector<HTMLCanvasElement>('.layered-scene') ?? image : image;
       if (!input) return;
       try {
         context.clearRect(0, 0, canvas.width, canvas.height);
@@ -96,7 +99,7 @@ export function Viewfinder({ scene, source, customImage, videoRef, stream, camer
           {source === 'upload' && !customImage && <div className="media-message"><span className="message-glyph"><Upload size={24} /></span><p>{text.upload}</p><button className="quiet-button" onClick={(event) => { event.stopPropagation(); inputRef.current?.click(); }}>{text.open}</button></div>}
           {source === 'upload' && customImage && <img className="upload-photo" src={customImage.src} alt="Uploaded photo to simulate a camera image" style={{ filter, transform: `scale(${Math.max(1, camera.focalLength / 50 * (camera.sensor === 'aps-c' ? 1.5 : 1))})` }} />}
           {isScene && !image && <div className="media-message"><span className="loading-dot" /><p>{error || text.scene}</p></div>}
-          {isScene && source === 'scene2d' && image && <img className="scene-photo" src={image.src} alt={scene.title[language]} style={{ filter }} draggable={false} />}
+          {isScene && source === 'scene2d' && image && <LayeredSceneCanvas scene={scene} background={image} camera={camera} pauseRendering={pause3dRendering} zoom={Math.max(1, camera.focalLength / 50 * (camera.sensor === 'aps-c' ? 1.5 : 1))} />}
           <div className="scene-shade" />
           <div className="iso-noise" style={{ opacity: Math.min(0.18, camera.filmGrain / 200 + isoNoiseAmount(exposure.iso) * 0.006) }} aria-hidden="true" />
           {highlightMask && <img className="highlight-mask" src={highlightMask} alt="" aria-hidden="true" />}

@@ -33,11 +33,23 @@ export interface ResolvedExposure {
   outOfRange: boolean;
 }
 
+export interface SceneLayer {
+  id: string;
+  image: string;
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  depth: number;
+  motion?: number;
+}
+
 export interface SceneDefinition {
   id: string;
   image: string;
   stageImage: string;
   stageFiles: string[];
+  layers: SceneLayer[];
   title: Record<Language, string>;
   lightEv: number;
   depthHint: number;

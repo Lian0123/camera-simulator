@@ -1,9 +1,17 @@
 const CACHE = '__APP_CACHE_NAME__';
 const APP_ASSETS = __APP_ASSETS__;
 const SCENES = [
-  '/camera-simulator/scenes/tokyo-rain.png',
-  '/camera-simulator/scenes/window-still-life.png',
-  '/camera-simulator/scenes/low-light-room.png',
+  '/camera-simulator/scenes/tokyo-rain.jpg',
+  '/camera-simulator/scenes/window-still-life.jpg',
+  '/camera-simulator/scenes/low-light-room.jpg',
+  '/camera-simulator/scenes/tokyo-backplate.jpg',
+  '/camera-simulator/scenes/window-backplate.jpg',
+  '/camera-simulator/scenes/interior-backplate.jpg',
+  '/camera-simulator/scenes/layers/car.png',
+  '/camera-simulator/scenes/layers/potted-plant.png',
+  '/camera-simulator/scenes/layers/vase.png',
+  '/camera-simulator/scenes/layers/sofa.png',
+  '/camera-simulator/scenes/layers/oil-lamp.png',
 ];
 const CORE = [
   '/camera-simulator/', '/camera-simulator/index.html', '/camera-simulator/manifest.webmanifest',
@@ -24,7 +32,7 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET' || new URL(event.request.url).origin !== self.location.origin) return;
   const pathname = new URL(event.request.url).pathname;
-  const explicitSceneAsset = pathname.includes('/models/') || /-backplate\.png$/.test(pathname);
+  const explicitSceneAsset = pathname.includes('/models/') || /-backplate\.jpe?g$/.test(pathname);
   event.respondWith(caches.match(event.request, { ignoreVary: true }).then((cached) => {
     if (cached) return cached;
     return fetch(event.request).then((response) => {

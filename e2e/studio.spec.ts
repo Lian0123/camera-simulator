@@ -10,6 +10,7 @@ test('loads the camera studio at its GitHub Pages project path', async ({ page }
   await openStudio(page);
   await expect(page.getByRole('heading', { name: 'After the rain' })).toBeVisible();
   await expect(page.locator('[data-shutter]')).toBeEnabled();
+  await expect(page.locator('.layered-scene')).toHaveAttribute('data-ready', 'true', { timeout: 15_000 });
   await expect(page.getByRole('slider', { name: 'Aperture' })).toBeVisible();
   if (testInfo.project.name === 'chromium') {
     await mkdir('docs/screenshots', { recursive: true });
@@ -53,6 +54,55 @@ test('renders the offline 3D still-life models and captures the rendered view', 
   await expect(stage).toHaveAttribute('data-model-count', '1', { timeout: 30_000 });
   await expect(page.locator('.scene-stage-error')).toHaveCount(0);
   await stage.screenshot({ path: 'docs/screenshots/3d-tokyo-scene.png' });
+  await page.locator('[data-shutter]').click();
+  await expect(page.locator('.film-frame')).toHaveCount(1, { timeout: 20_000 });
+  await expect(page.locator('.review-image')).toBeVisible();
+});
+
+test('renders independent 2D depth layers, changes blur with aperture and captures the composite', async ({ page, browserName, isMobile }) => {
+  test.skip(browserName !== 'chromium' || isMobile, 'The layered canvas acceptance check runs once in desktop Chromium.');
+  await openStudio(page);
+  await page.locator('.scene-card').nth(1).click();
+  const canvas = page.locator('.layered-scene');
+  const frameRatio = await page.locator('.photo-frame').evaluate((element) => {
+    const { width, height } = element.getBoundingClientRect();
+    return width / height;
+  });
+  expect(frameRatio).toBeCloseTo(1.5, 1);
+  await expect(canvas).toHaveAttribute('data-layer-count', '2');
+  await expect(canvas).toHaveAttribute('data-ready', 'true', { timeout: 15_000 });
+  const fingerprint = async () => canvas.evaluate((element) => {
+    const target = element as HTMLCanvasElement;
+    const { data, width, height } = target.getContext('2d')!.getImageData(0, 0, target.width, target.height);
+    let hash = 2166136261;
+    const rowStep = Math.max(1, Math.floor(height / 100));
+    const columnStep = Math.max(1, Math.floor(width / 100));
+    for (let y = 0; y < height; y += rowStep) for (let x = 0; x < width; x += columnStep) {
+      const index = (y * width + x) * 4;
+      hash = Math.imul(hash ^ data[index], 16777619);
+      hash = Math.imul(hash ^ data[index + 1], 16777619);
+      hash = Math.imul(hash ^ data[index + 2], 16777619);
+    }
+    return hash >>> 0;
+  });
+  const before = await fingerprint();
+  await mkdir('docs/screenshots', { recursive: true });
+  await canvas.screenshot({ path: 'docs/screenshots/2d-window-layers.png' });
+  const aperture = page.getByRole('slider', { name: 'Aperture' });
+  await aperture.focus();
+  await aperture.press('Home');
+  await expect(aperture).toHaveValue('0');
+  await expect(page.locator('.aperture-dial .dial-data strong')).toHaveText('f/1.4');
+  await expect.poll(fingerprint).not.toBe(before);
+  for (const index of [2, 0, 1]) {
+    await page.locator('.scene-card').nth(index).click();
+    const layers = page.locator('.layered-scene');
+    await expect(layers).toHaveAttribute('data-layer-count', index === 0 ? '1' : '2');
+    await expect(layers).toHaveAttribute('data-ready', 'true', { timeout: 15_000 });
+    if (index === 0 || index === 2) {
+      await layers.screenshot({ path: `docs/screenshots/2d-${index === 0 ? 'tokyo' : 'interior'}-layers.png` });
+    }
+  }
   await page.locator('[data-shutter]').click();
   await expect(page.locator('.film-frame')).toHaveCount(1, { timeout: 20_000 });
   await expect(page.locator('.review-image')).toBeVisible();
@@ -166,6 +216,7 @@ test('cancels a long exposure before it creates a photo', async ({ page, isMobil
 test('keeps the shutter visible without horizontal page overflow at 360 px', async ({ page, isMobile }) => {
   test.skip(!isMobile || page.viewportSize()?.width !== 360, 'This check targets the 360 px mobile project.');
   await openStudio(page);
+  await expect(page.locator('.layered-scene')).toHaveAttribute('data-ready', 'true', { timeout: 15_000 });
   const overflow = await page.evaluate(() => ({
     viewport: document.documentElement.clientWidth,
     content: document.documentElement.scrollWidth,
