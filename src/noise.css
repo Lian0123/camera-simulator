@@ -1,0 +1,10 @@
+.iso-noise{position:absolute;inset:0;z-index:1;pointer-events:none;background-image:url('/camera-simulator/grain.svg');background-size:180px 180px;mix-blend-mode:soft-light}
+.mobile-export-action{display:none}
+.update-alert{gap:12px}
+.update-alert>div{display:flex;gap:8px}
+.update-alert button{min-height:28px;padding:0 9px;border:1px solid #554735;background:#211e19;color:var(--amber-bright);cursor:pointer;font-size:9px}
+.update-alert .update-later{border-color:transparent;background:transparent;color:var(--sub)}
+.history-actions{display:flex;gap:4px}
+.history-actions .icon-button{width:27px;height:27px}
+.history-actions button:first-child span{font:9px var(--mono)}
+@media(max-width:700px){.mobile-export-action{min-height:34px;margin:-6px 0 10px;display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid #554735;background:#211e19;color:var(--amber-bright);font:9px var(--mono);letter-spacing:.04em}}

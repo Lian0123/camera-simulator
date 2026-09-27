@@ -1,32 +1,40 @@
 {
-  "name": "pro-camera-simulator",
-  "version": "0.0.3",
-  "description": "An advanced camera simulator with professional photography parameters and real-time preview effects",
+  "name": "camera-simulator",
+  "version": "1.0.0",
+  "private": true,
   "type": "module",
-  "main": "index.html",
+  "description": "A photographic camera simulator and learning studio.",
   "scripts": {
-    "start": "python3 -m http.server 8000",
-    "serve": "python3 -m http.server 8000"
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc -b --pretty"
   },
-  "keywords": [
-    "camera",
-    "simulator",
-    "photography",
-    "photo-editing",
-    "react",
-    "canvas"
-  ],
-  "author": "Camera Simulator Contributors",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/lianyongli/camera-simulator-1"
+  "dependencies": {
+    "i18next": "^25.3.0",
+    "lucide-react": "^0.468.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-i18next": "^15.6.0",
+    "three": "^0.177.0",
+    "zustand": "^5.0.6"
   },
-  "bugs": {
-    "url": "https://github.com/lianyongli/camera-simulator-1/issues"
-  },
-  "homepage": "https://github.com/lianyongli/camera-simulator-1#readme",
-  "engines": {
-    "node": ">=14.0.0"
+  "devDependencies": {
+    "@playwright/test": "^1.53.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@types/three": "^0.177.0",
+    "@types/node": "^22.15.30",
+    "@vitejs/plugin-react": "^4.7.0",
+    "jsdom": "^26.1.0",
+    "typescript": "~5.8.3",
+    "vite": "^6.3.5",
+    "vitest": "^3.2.4"
   }
 }

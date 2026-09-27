@@ -1,26 +1,9 @@
-# Dependencies
 node_modules/
-package-lock.json
-yarn.lock
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.DS_Store
-
-# OS
-Thumbs.db
-.DS_Store
-
-# Build outputs
 dist/
-build/
+coverage/
+playwright-report/
+test-results/
+.DS_Store
 *.log
-
-# Temporary files
-tmp/
-temp/
-*.tmp
+*.tsbuildinfo
+.env*

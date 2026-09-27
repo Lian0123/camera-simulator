@@ -1,0 +1,15 @@
+{
+  "name": "Stillframe Camera Studio",
+  "short_name": "Stillframe",
+  "description": "A local camera practice and photo studio.",
+  "start_url": "/camera-simulator/#/shoot",
+  "scope": "/camera-simulator/",
+  "id": "/camera-simulator/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#111210",
+  "theme_color": "#111210",
+  "lang": "zh-Hant",
+  "categories": ["photo", "education", "utilities"],
+  "icons": [{ "src": "/camera-simulator/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

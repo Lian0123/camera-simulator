@@ -1,0 +1,15 @@
+.mobile-scenes{display:none}
+@media(max-width:700px){
+  .mobile-scenes{margin:0 -13px 10px;padding:0 13px;display:flex;gap:6px;overflow:auto hidden;scrollbar-width:none}
+  .mobile-scenes::-webkit-scrollbar{display:none}
+  .mobile-scenes>button{height:42px;min-width:130px;max-width:47vw;flex:none;padding:3px;display:flex;align-items:center;gap:6px;text-align:left;border:1px solid #30312a;color:#aaa69c;background:#181915;border-radius:2px}
+  .mobile-scenes>button.active{border-color:#85694b;background:#211e19}
+  .mobile-scene-image{width:43px;height:34px;flex:none;background-size:cover;background-position:center}
+  .mobile-scenes>button>span:nth-child(2){min-width:0;display:grid;gap:1px;flex:1}
+  .mobile-scenes small{color:var(--muted);font:6px var(--mono)}
+  .mobile-scenes strong{overflow:hidden;color:#d6d0c5;font-size:9px;font-weight:400;white-space:nowrap;text-overflow:ellipsis}
+  .mobile-scenes>button>svg{flex:none;color:#8f816e;width:11px}
+  .mobile-scenes>button.active>svg{color:var(--amber-bright)}
+  .view-toolbar{margin-bottom:8px}
+}
+@media(max-width:390px){.mobile-scenes{margin-right:-9px;margin-left:-9px;padding-right:9px;padding-left:9px}}
