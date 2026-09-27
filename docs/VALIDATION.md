@@ -13,6 +13,6 @@ The Playwright server serves the built `dist` output at the `/camera-simulator/`
 
 Latest local run: `npm run typecheck`, `npm test` (13 tests), `npm run build`, and `npm run test:e2e -- --workers=1` all passed. The browser suite reported 38 passed and 27 expected browser/device-specific skips across five projects. The build emits the WebGL stage as a lazy-loaded 587 KiB JavaScript chunk (150 KiB gzip); it is fetched only when the 3D source is selected.
 
-The main-branch [GitHub Actions run](https://github.com/Lian0123/camera-simulator/actions/runs/36349187054) passed the same checks and deployed Pages. After deployment, the site root, `/camera-simulator/sw.js`, and `/camera-simulator/models/potted_plant_04/potted_plant_04_1k.gltf` all returned HTTP 200. The model response uses `model/gltf+json` and is served beneath the configured project path.
+The main-branch [GitHub Actions run](https://github.com/Lian0123/camera-simulator/actions/runs/36352115680) passed the same checks and deployed Pages. After deployment, the site root, `/camera-simulator/sw.js`, the transparent plant layer PNG, and the window backplate JPEG all returned HTTP 200. The updated release is served beneath the configured project path.
 
 `docs/screenshots/` contains captured desktop and 360 px mobile layouts, the three layered 2D scenes, and the three 3D stages. No physical phone or hardware camera was available in this automated run; IndexedDB quota exhaustion and real WebGL context loss also remain manual acceptance checks.
