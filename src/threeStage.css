@@ -1,0 +1,4 @@
+.scene-stage-error{position:absolute;z-index:8;left:50%;bottom:16px;transform:translateX(-50%);width:min(92%,440px);padding:11px 13px;display:flex;align-items:center;justify-content:space-between;gap:14px;color:#e7c4a3;background:rgba(20,18,15,.94);border:1px solid rgba(221,160,103,.48);font:11px/1.45 var(--mono);box-shadow:0 8px 24px rgba(0,0,0,.28)}
+.scene-stage-error button{flex:none;padding:6px 8px;border:1px solid #725439;border-radius:2px;color:#f0c28f;background:#282019;font:10px var(--mono);cursor:pointer}
+.scene-stage-error button:focus-visible{outline:2px solid var(--amber-bright);outline-offset:2px}
+@media(max-width:600px){.scene-stage-error{bottom:8px;font-size:9px}.scene-stage-error button{font-size:9px}}

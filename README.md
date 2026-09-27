@@ -7,12 +7,12 @@ Stillframe is a quiet, local-first camera practice studio. Explore how exposure 
 ## What is included
 
 - P, A, S, and M exposure modes, Auto ISO, exposure compensation, focal length, sensor format, white balance, focus distance, and matrix / center-weighted / spot metering.
-- Three original photographic practice scenes with a rule-of-thirds overlay, focus placement, exposure meter, live histogram, selectable crop, and a WebGL photographic viewfinder.
+- Three photographic practice scenes with a rule-of-thirds overlay, focus placement, exposure meter, live histogram, selectable crop, and a WebGL depth stage that composites local PBR props over photographic backplates.
 - Local JPEG, PNG, and WebP photo import, plus an explicitly activated device camera. Stillframe does not request microphone access.
 - A capture library on the current device, in-browser color controls, JPEG / PNG export, and versioned settings import / export.
-- Traditional Chinese, English, and Japanese. The app shell and included photographs can be used offline after the first visit.
+- Traditional Chinese, English, and Japanese. The app shell and included photographs are available offline after the first visit; download the optional 3D scene pack from the depth stage to render its models offline too.
 
-Photography sources are presented honestly: built-in views use photographs as scene plates, so clicking a focus point is a focus-distance exercise rather than focus measurement from a true depth map. Photos from the device camera or an upload receive software effects; they do not change hardware exposure or recover real scene depth.
+The 3D stage models its featured foreground props and applies focus blur based on their rendered depth. Its city and room backdrops are photographs, and the separate 2D practice scenes do not yet provide depth maps or object-layer masks. Photos from the device camera or an upload receive software effects; they do not change hardware exposure or recover real scene depth. Downloading the optional model pack stores about 24 MB on the device; the interface reports progress and supports cancellation.
 
 Images and settings stay in the browser. Captures live in IndexedDB and can be removed from the library. Camera access begins only after the user activates it and is available on HTTPS or localhost.
 
@@ -39,7 +39,7 @@ The Vite build uses the project path `/camera-simulator/`. The GitHub Actions wo
 
 ## Photo asset notes
 
-The three bundled scene plates are original images generated for Stillframe. They were created for this project and do not contain stock photographs or remote font, image, model, or texture dependencies. See [the asset notes](docs/ASSETS.md).
+The scene photographs and 3D backplates are original images generated for Stillframe. PBR models and textures are bundled locally with their licenses recorded in [the asset notes](docs/ASSETS.md); the running app has no remote image or model dependency.
 
 ## License
 

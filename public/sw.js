@@ -23,10 +23,12 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET' || new URL(event.request.url).origin !== self.location.origin) return;
+  const pathname = new URL(event.request.url).pathname;
+  const explicitSceneAsset = pathname.includes('/models/') || /-backplate\.png$/.test(pathname);
   event.respondWith(caches.match(event.request, { ignoreVary: true }).then((cached) => {
     if (cached) return cached;
     return fetch(event.request).then((response) => {
-      if (response.ok) {
+      if (response.ok && !explicitSceneAsset) {
         const clone = response.clone();
         void caches.open(CACHE).then((cache) => cache.put(event.request, clone));
       }

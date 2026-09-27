@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import {
   Aperture, ArrowDownToLine, ArrowLeftRight, AudioLines, BarChart3 as Histogram, Camera, Check, ChevronDown,
-  CircleHelp, Clock3, Focus, Grid2X2, Languages, Minus, Plus, RotateCcw, RotateCw, SlidersHorizontal,
+  CircleHelp, Clock3, Download, Focus, Grid2X2, Languages, Minus, Plus, RotateCcw, RotateCw, SlidersHorizontal,
   Sun, Upload, X, Zap,
 } from 'lucide-react';
 import { useStudioStore, DEFAULT_CAMERA } from '../camera/store';
@@ -12,6 +12,7 @@ import { DEFAULT_DEVELOP, downloadImage, renderDevelopedImage, type DevelopSetti
 import { SCENES, imageFromUrl } from '../camera/scenes';
 import type { CameraSettings, CaptureRecord, SourceKind, Workspace } from '../camera/types';
 import { saveCapture, listCaptures, deleteCapture, clearCaptures } from '../storage/library';
+import { downloadOfflineScenes, getOfflineSceneProgress } from '../storage/offlineScenes';
 import i18n from '../i18n';
 import { Viewfinder } from './Viewfinder';
 import { DevelopedPhoto } from './DevelopedPhoto';
@@ -206,8 +207,10 @@ export function Studio() {
   const [ratioOpen, setRatioOpen] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
   const [updateReady, setUpdateReady] = useState(false);
+  const [offlinePack, setOfflinePack] = useState({ ready: false, saved: 0, total: 0, downloading: false, error: false });
   const videoRef = useRef<HTMLVideoElement>(null);
   const abortCapture = useRef<AbortController | null>(null);
+  const abortOfflinePack = useRef<AbortController | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const settingsFileInput = useRef<HTMLInputElement>(null);
   const updateRegistration = useRef<ServiceWorkerRegistration | null>(null);
@@ -237,6 +240,36 @@ export function Studio() {
     setDevelopHistory((previous) => [...previous.slice(-19), develop]);
   };
   const resetDevelop = () => setDevelop(DEFAULT_DEVELOP);
+
+  useEffect(() => {
+    if (source !== 'scene3d') return;
+    let current = true;
+    void getOfflineSceneProgress().then((progress) => {
+      if (current) setOfflinePack((state) => ({ ...state, ...progress, error: false }));
+    }).catch(() => {
+      if (current) setOfflinePack((state) => ({ ...state, error: true }));
+    });
+    return () => { current = false; };
+  }, [source]);
+
+  const saveOfflineScenes = async () => {
+    const controller = new AbortController();
+    abortOfflinePack.current = controller;
+    setOfflinePack((state) => ({ ...state, downloading: true, error: false, saved: 0 }));
+    try {
+      const total = await downloadOfflineScenes(controller.signal, (saved, count) => {
+        setOfflinePack((state) => ({ ...state, saved, total: count }));
+      });
+      setOfflinePack({ ready: true, saved: total, total, downloading: false, error: false });
+      setNotice(t('offline3dSaved', '3D scenes saved for offline use.'));
+    } catch (error) {
+      const cancelled = error instanceof DOMException && error.name === 'AbortError';
+      setOfflinePack((state) => ({ ...state, ready: false, downloading: false, error: !cancelled }));
+      if (!cancelled) setNotice(t('offline3dError', 'Could not save the full 3D scene pack. Check your connection or available storage and retry.'));
+    } finally {
+      if (abortOfflinePack.current === controller) abortOfflinePack.current = null;
+    }
+  };
 
   useEffect(() => {
     void i18n.changeLanguage(language);
@@ -358,6 +391,11 @@ export function Studio() {
     if (source === 'upload') {
       if (!customImage) throw new Error(t('uploadGuide', 'Choose a photo first.'));
       return customImage;
+    }
+    if (source === 'scene3d') {
+      const renderedStage = document.querySelector<HTMLCanvasElement>('.three-stage canvas');
+      if (renderedStage?.width && renderedStage.height) return renderedStage;
+      return imageFromUrl(scene.stageImage);
     }
     return imageFromUrl(scene.image);
   };
@@ -504,6 +542,16 @@ export function Studio() {
         <div className="mobile-scenes" aria-label={t('scene', 'Scenes')}>{SCENES.map((item, index) => <button key={item.id} aria-pressed={item.id === scene.id} className={item.id === scene.id ? 'active' : ''} onClick={() => { setScene(item); if (source === 'upload' || source === 'camera') chooseSource('scene2d'); }}><span className="mobile-scene-image" style={{ backgroundImage: `url("${item.image}")` }} /><span><small>0{index + 1} · {item.lightEv.toFixed(1)} EV</small><strong>{item.title[language]}</strong></span><ChevronDown size={13} /></button>)}</div>
         <div className="view-toolbar"><div className="toolbar-heading"><span className="eyebrow">{workspace === 'shoot' ? '01 / EXPOSURE PRACTICE' : workspace === 'playback' ? '02 / IMAGE REVIEW' : '03 / COLOR ROOM'}</span><h1>{workspace === 'shoot' ? scene.title[language] : workspace === 'playback' ? t('playback', 'Review photographs') : t('color', 'Develop image')}</h1><p>{workspace === 'shoot' ? scene.location[language] : workspace === 'playback' ? `${captures.length} ${t('captures', 'captures')}` : 'Tone, texture, and finish'}</p></div>
         <div className="view-tools"><div className="ratio-control"><span className="eyebrow">ASPECT</span><button title="Aspect ratio" aria-expanded={ratioOpen} onClick={() => setRatioOpen((value) => !value)}><span /> {camera.aspectRatio === 1.5 ? '3:2' : camera.aspectRatio === 1.3333333333333333 ? '4:3' : camera.aspectRatio === 1.7777777777777777 ? '16:9' : '1:1'} <ChevronDown size={11} /></button>{ratioOpen && <div className="ratio-menu">{([{ label: '3:2', value: 1.5 }, { label: '4:3', value: 1.3333333333333333 }, { label: '16:9', value: 1.7777777777777777 }, { label: '1:1', value: 1 }] as const).map((option) => <button key={option.label} className={camera.aspectRatio === option.value ? 'active' : ''} onClick={() => { update('aspectRatio', option.value); setRatioOpen(false); }}>{option.label}</button>)}</div>}</div><button className={`view-tool ${camera.showHistogram ? 'selected' : ''}`} aria-label="Toggle histogram" onClick={() => update('showHistogram', !camera.showHistogram)}><Histogram size={16} /></button><button className="view-tool" aria-label="Autofocus (F)" data-autofocus onClick={autofocus}><Focus size={16} /></button><button className="view-tool edit-crops" aria-label="Edit photo" onClick={() => setWorkspaceRoute('edit')}><SlidersHorizontal size={16} /></button>{workspace === 'playback' && activeRecord && captures.length > 1 && <button className="view-tool" aria-label={t('compare', 'Compare photos')} title={t('compare', 'Compare photos')} onClick={() => setCompare(activeRecord)}><ArrowLeftRight size={15} /></button>}{workspace === 'playback' && activeRecord && <button className="view-tool" aria-label={t('delete', 'Delete photo')} title={t('delete', 'Delete photo')} onClick={async () => { await deleteCapture(activeRecord.id); const next = captures.filter((item) => item.id !== activeRecord.id); setCaptures(next); setActiveRecord(next[0] ?? null); }}><X size={14} /></button>}</div></div>
+
+        {source === 'scene3d' && workspace === 'shoot' && <div className="offline-pack-row" aria-live="polite">
+          <button type="button" data-offline-pack onClick={() => offlinePack.downloading ? abortOfflinePack.current?.abort() : void saveOfflineScenes()} disabled={offlinePack.ready}>
+            <Download size={13} />
+            {offlinePack.downloading ? `${t('offline3dProgress', 'Preparing 3D scenes for offline use')} · ${offlinePack.saved}/${offlinePack.total || offlinePack.saved}` : offlinePack.ready ? t('offline3dSaved', '3D scenes saved for offline use') : t('offline3dDownload', 'Download 3D scenes for offline use')}
+          </button>
+          {offlinePack.downloading && <progress max={offlinePack.total || 1} value={offlinePack.saved} aria-label={t('offline3dProgress', '3D download progress')} />}
+          {offlinePack.downloading && <button type="button" className="offline-pack-cancel" onClick={() => abortOfflinePack.current?.abort()}>{t('offline3dCancel', 'Cancel')}</button>}
+          {offlinePack.error && <span role="alert">{t('offline3dError', 'Could not save the full 3D scene pack. Check your connection or available storage and retry.')}</span>}
+        </div>}
 
         {workspace !== 'shoot' && activeRecord && <button className="mobile-export-action" onClick={() => setExportOptionsOpen(true)}><ArrowDownToLine size={14} /> {t('download', 'Save photo')}</button>}
         {guideOpen && <div className="learning-card"><span className="learning-mark"><Aperture size={17} /></span><div><strong>{t('settingsHelp', 'Change aperture in A mode to explore exposure and depth of field.')}</strong><span>Try f/2.8 · 1/500 · ISO 200, then compare with f/11 · 1/30 · ISO 800.</span></div><button className="icon-button tiny" onClick={() => setGuideOpen(false)} aria-label="Close guide"><X size={14} /></button></div>}

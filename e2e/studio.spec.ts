@@ -33,6 +33,52 @@ test('switches between scene view and the camera settings panel', async ({ page 
   await expect(manual).toHaveAttribute('aria-pressed', 'true');
 });
 
+test('renders the offline 3D still-life models and captures the rendered view', async ({ page, browserName, isMobile }) => {
+  test.skip(browserName !== 'chromium' || isMobile, 'The WebGL asset acceptance check runs in desktop Chromium.');
+  test.setTimeout(90_000);
+  await openStudio(page);
+  await page.locator('.scene-card').nth(1).click();
+  await page.locator('.source-switcher .source-button').nth(1).click();
+  const stage = page.locator('.three-stage');
+  await expect(stage.locator('canvas')).toBeVisible();
+  await expect(stage).toHaveAttribute('data-model-count', '2', { timeout: 20_000 });
+  await expect(page.locator('.scene-stage-error')).toHaveCount(0);
+  await mkdir('docs/screenshots', { recursive: true });
+  await page.screenshot({ path: 'docs/screenshots/3d-window-scene.png', fullPage: true });
+  await page.locator('.scene-card').nth(2).click();
+  await expect(stage).toHaveAttribute('data-model-count', '2', { timeout: 20_000 });
+  await expect(page.locator('.scene-stage-error')).toHaveCount(0);
+  await page.screenshot({ path: 'docs/screenshots/3d-interior-scene.png', fullPage: true });
+  await page.locator('.scene-card').nth(0).click();
+  await expect(stage).toHaveAttribute('data-model-count', '1', { timeout: 30_000 });
+  await expect(page.locator('.scene-stage-error')).toHaveCount(0);
+  await page.screenshot({ path: 'docs/screenshots/3d-tokyo-scene.png', fullPage: true });
+  await page.locator('.scene-card').nth(1).click();
+  await expect(stage).toHaveAttribute('data-model-count', '2', { timeout: 20_000 });
+  await page.locator('[data-shutter]').click();
+  await expect(page.locator('.film-frame')).toHaveCount(1);
+  await expect(page.locator('.review-image')).toBeVisible();
+});
+
+test('downloads the 3D scene pack and renders the models while offline', async ({ page, browserName, isMobile }) => {
+  test.skip(browserName !== 'chromium' || isMobile, 'Explicit scene-pack storage is verified once in desktop Chromium.');
+  test.setTimeout(180_000);
+  await openStudio(page);
+  await page.locator('.source-switcher .source-button').nth(1).click();
+  await expect(page.locator('.three-stage')).toHaveAttribute('data-model-count', '1', { timeout: 30_000 });
+  const download = page.locator('[data-offline-pack]');
+  await expect(download).toBeEnabled();
+  await download.click();
+  await expect(download).toContainText('saved for offline use', { timeout: 150_000 });
+  const cachedAssets = await page.evaluate(async () => (await caches.open('scene-packs-v1')).keys()).then((keys) => keys.length);
+  expect(cachedAssets).toBeGreaterThan(20);
+
+  await page.context().setOffline(true);
+  await page.locator('.scene-card').nth(2).click();
+  await expect(page.locator('.three-stage')).toHaveAttribute('data-model-count', '2', { timeout: 25_000 });
+  await expect(page.locator('.scene-stage-error')).toHaveCount(0);
+});
+
 test('adapts the workbench to a mobile viewport', async ({ page, isMobile }) => {
   await openStudio(page);
   await expect(page.locator('[data-shutter]')).toBeVisible();

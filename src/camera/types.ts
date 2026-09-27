@@ -36,6 +36,8 @@ export interface ResolvedExposure {
 export interface SceneDefinition {
   id: string;
   image: string;
+  stageImage: string;
+  stageFiles: string[];
   title: Record<Language, string>;
   lightEv: number;
   depthHint: number;

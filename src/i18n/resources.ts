@@ -15,6 +15,8 @@ export const resources: Record<Language, Record<string, string>> = {
     sceneNote: '本場景使用照片取景模擬；景深與測光用於攝影練習。', cropInfo: '照片／相機來源：效果為軟體模擬。', sourceMode: '影像來源', quality: '最高畫質', lowLight: '弱光練習', focusMark: 'AF 對焦點', cameraHint: '相機光圈與 ISO 由軟體模擬；實際相機畫面不會改變硬體曝光。',
     compareTitle: '並列比較', close: '關閉', selectCompare: '選擇要比較的照片', downloadSize: '匯出尺寸', longEdge: '最長邊', notice: '圖片和設定儲存在此裝置，沒有上傳到伺服器。',
     settingsHelp: 'A 模式會自動配合快門。調整光圈即可看到明暗與散景的變化。', updateAvailable: '新版已下載完成。', updateNow: '重新載入更新', updateLater: '稍後', redo: '重做', reset: '重設調色',
+    offline3dDownload: '下載 3D 場景供離線使用', offline3dSaved: '3D 場景已保存，可供離線使用', offline3dProgress: '正在準備離線 3D 場景', offline3dCancel: '取消', offline3dError: '無法保存完整的 3D 場景。請檢查網路或裝置儲存空間後再試。',
+    stageWebglError: '此裝置無法啟動 WebGL。可以改用 2D 場景，或重試。', stageContextError: 'WebGL 暫停了。重試或切換到 2D 場景。', stageModelError: '無法載入場景模型。重試或改用 2D 場景。', stageRetry: '重試', stageFallback: '使用 2D 場景',
   },
   en: {
     brand: 'STILLFRAME', tagline: 'A practice space for photography', studio: 'CAMERA STUDIO', scene: 'SCENES', threeD: 'DEPTH STUDIO', twoD: 'PRACTICE SETS', upload: 'IMPORT PHOTO', camera: 'CAMERA',
@@ -30,6 +32,8 @@ export const resources: Record<Language, Record<string, string>> = {
     sceneNote: 'Photographic viewfinder simulation; depth and metering are practice tools.', cropInfo: 'Photo and camera sources use software-simulated controls.', sourceMode: 'SOURCE', quality: 'FULL QUALITY', lowLight: 'LOW LIGHT STUDY', focusMark: 'AF POINT', cameraHint: 'Aperture and ISO are software simulations; your device camera exposure is unchanged.',
     compareTitle: 'Side-by-side comparison', close: 'Close', selectCompare: 'Select a photo to compare', downloadSize: 'Export size', longEdge: 'Long edge', notice: 'Photos and settings are saved on this device. Nothing is uploaded.',
     settingsHelp: 'In A mode, the shutter adjusts automatically. Change the aperture to explore exposure and depth of field.', updateAvailable: 'A new version is ready.', updateNow: 'Reload to update', updateLater: 'Later', redo: 'Redo', reset: 'Reset edits',
+    offline3dDownload: 'Download 3D scenes for offline use', offline3dSaved: '3D scenes saved for offline use', offline3dProgress: 'Preparing 3D scenes for offline use', offline3dCancel: 'Cancel', offline3dError: 'Could not save the full 3D scene pack. Check your connection or available storage and retry.',
+    stageWebglError: 'WebGL could not start on this device. Use the 2D scene or retry.', stageContextError: 'WebGL paused. Retry or switch to the 2D scene.', stageModelError: 'A scene model could not load. Retry or switch to the 2D scene.', stageRetry: 'Retry', stageFallback: 'Use 2D scene',
   },
   ja: {
     brand: 'STILLFRAME', tagline: '写真を練習する場所', studio: 'CAMERA STUDIO', scene: 'シーン', threeD: '奥行きスタジオ', twoD: 'シーン練習', upload: '写真を読み込む', camera: 'カメラ',
@@ -42,5 +46,7 @@ export const resources: Record<Language, Record<string, string>> = {
     saved: '写真を保存しました。', storageError: '写真を保存できません。ダウンロードをご利用ください。', importSettings: '設定を読み込む', exportSettings: '設定を書き出す', unsupportedSettings: '非対応の設定です。Stillframe 形式を選択してください。',
     unsupportedImage: '対応していない形式です。JPEG、PNG、WebP を選んでください。', imageTooLarge: '画像が 40 MB を超えています。小さいファイルを選んでください。', imageDecodeError: 'この画像を読み込めませんでした。', sceneNote: '写真によるファインダー表示です。測光と奥行きは練習用です。',
     cropInfo: '写真と実カメラではソフトウェアによる模擬効果を表示します。', sourceMode: '入力', quality: '高画質', lowLight: '暗所練習', focusMark: 'AF ポイント', cameraHint: '絞りと ISO はソフトウェア模擬です。実カメラの露出は変わりません。', compareTitle: '写真を比較', close: '閉じる', selectCompare: '比較する写真を選択', downloadSize: '書き出しサイズ', longEdge: '長辺', notice: '写真と設定はこの端末に保存され、サーバーには送信されません。', settingsHelp: 'A モードではシャッター速度が自動で変わります。絞りを変えて撮影を練習できます。', updateAvailable: '新しいバージョンを準備しました。', updateNow: '再読み込みして更新', updateLater: 'あとで', redo: 'やり直す', reset: '現像をリセット',
+    offline3dDownload: '3D シーンをオフライン用に保存', offline3dSaved: '3D シーンをオフライン用に保存しました', offline3dProgress: 'オフライン用の 3D シーンを準備中', offline3dCancel: 'キャンセル', offline3dError: '3D シーンを保存できません。接続または端末の空き容量を確認して再試行してください。',
+    stageWebglError: 'この端末では WebGL を起動できません。2D シーンに切り替えるか、もう一度お試しください。', stageContextError: 'WebGL が停止しました。再試行するか 2D シーンに切り替えてください。', stageModelError: 'シーンのモデルを読み込めません。再試行するか 2D シーンをご利用ください。', stageRetry: '再試行', stageFallback: '2D シーンを使用',
   },
 };

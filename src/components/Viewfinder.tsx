@@ -33,7 +33,7 @@ export function Viewfinder({ scene, source, customImage, videoRef, stream, camer
     if (source !== 'scene2d' && source !== 'scene3d') return;
     let active = true;
     setSceneImage(null);
-    void imageFromUrl(scene.image).then((image) => { if (active) setSceneImage(image); }).catch(() => setError('Could not load this scene.'));
+    void imageFromUrl(source === 'scene3d' ? scene.stageImage : scene.image).then((image) => { if (active) setSceneImage(image); }).catch(() => setError('Could not load this scene.'));
     return () => { active = false; };
   }, [scene, source]);
 
@@ -88,7 +88,7 @@ export function Viewfinder({ scene, source, customImage, videoRef, stream, camer
     <div className={`viewfinder-area ${dragging ? 'is-dragging' : ''}`} onDragOver={(event) => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={drop}>
       <div className="photo-frame" ref={frameRef} style={{ aspectRatio: camera.aspectRatio }} onClick={selectFocus} role="img" aria-label={isScene ? scene.title[language] : source === 'camera' ? 'Device camera viewfinder' : 'Photo viewfinder'}>
         <div className="photo-image" style={image ? { filter, backgroundImage: `url("${image.src}")` } : undefined}>
-          {source === 'scene3d' && image && <Suspense fallback={<div className="scene-stage-loading" aria-label="Loading the 3D viewfinder" />}><ThreePhotoStage image={image} focalLength={camera.focalLength} sensor={camera.sensor} /></Suspense>}
+          {source === 'scene3d' && image && <Suspense fallback={<div className="scene-stage-loading" aria-label="Loading the 3D viewfinder" />}><ThreePhotoStage image={image} sceneId={scene.id} focalLength={camera.focalLength} sensor={camera.sensor} aperture={exposure.aperture} focusDistance={camera.focusDistance} language={language} onFallback={onUseScene} /></Suspense>}
           {source === 'camera' && <video className="live-video" ref={videoRef} playsInline muted autoPlay style={{ filter }} />}
           {source === 'camera' && !stream && <div className="media-message"><span className="message-glyph"><Focus size={24} /></span><p>{cameraError ? 'Camera access is unavailable. Upload a photo or use a practice scene.' : text.camera}</p><button className="quiet-button" onClick={(event) => { event.stopPropagation(); onStartCamera(); }} disabled={cameraStarting}>{cameraStarting ? '…' : text.start}</button><button className="quiet-button" onClick={(event) => { event.stopPropagation(); onUseScene(); }}>{text.retry}</button></div>}
           {source === 'upload' && !customImage && <div className="media-message"><span className="message-glyph"><Upload size={24} /></span><p>{text.upload}</p><button className="quiet-button" onClick={(event) => { event.stopPropagation(); inputRef.current?.click(); }}>{text.open}</button></div>}
