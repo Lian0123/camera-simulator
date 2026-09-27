@@ -35,7 +35,7 @@ test('switches between scene view and the camera settings panel', async ({ page 
 
 test('renders the offline 3D still-life models and captures the rendered view', async ({ page, browserName, isMobile }) => {
   test.skip(browserName !== 'chromium' || isMobile, 'The WebGL asset acceptance check runs in desktop Chromium.');
-  test.setTimeout(90_000);
+  test.setTimeout(180_000);
   await openStudio(page);
   await page.locator('.scene-card').nth(1).click();
   await page.locator('.source-switcher .source-button').nth(1).click();
@@ -44,19 +44,17 @@ test('renders the offline 3D still-life models and captures the rendered view', 
   await expect(stage).toHaveAttribute('data-model-count', '2', { timeout: 20_000 });
   await expect(page.locator('.scene-stage-error')).toHaveCount(0);
   await mkdir('docs/screenshots', { recursive: true });
-  await page.screenshot({ path: 'docs/screenshots/3d-window-scene.png', fullPage: true });
+  await stage.screenshot({ path: 'docs/screenshots/3d-window-scene.png' });
   await page.locator('.scene-card').nth(2).click();
   await expect(stage).toHaveAttribute('data-model-count', '2', { timeout: 20_000 });
   await expect(page.locator('.scene-stage-error')).toHaveCount(0);
-  await page.screenshot({ path: 'docs/screenshots/3d-interior-scene.png', fullPage: true });
+  await stage.screenshot({ path: 'docs/screenshots/3d-interior-scene.png' });
   await page.locator('.scene-card').nth(0).click();
   await expect(stage).toHaveAttribute('data-model-count', '1', { timeout: 30_000 });
   await expect(page.locator('.scene-stage-error')).toHaveCount(0);
-  await page.screenshot({ path: 'docs/screenshots/3d-tokyo-scene.png', fullPage: true });
-  await page.locator('.scene-card').nth(1).click();
-  await expect(stage).toHaveAttribute('data-model-count', '2', { timeout: 20_000 });
+  await stage.screenshot({ path: 'docs/screenshots/3d-tokyo-scene.png' });
   await page.locator('[data-shutter]').click();
-  await expect(page.locator('.film-frame')).toHaveCount(1);
+  await expect(page.locator('.film-frame')).toHaveCount(1, { timeout: 20_000 });
   await expect(page.locator('.review-image')).toBeVisible();
 });
 

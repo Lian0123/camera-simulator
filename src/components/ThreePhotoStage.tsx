@@ -15,6 +15,7 @@ interface Props {
   aperture: number;
   focusDistance: number;
   language: 'zh' | 'en' | 'ja';
+  pauseRendering: boolean;
   onFallback: () => void;
 }
 
@@ -65,16 +66,18 @@ function fitModel(object: THREE.Object3D, height: number) {
 }
 
 /** A locally bundled photographic backplate with PBR props, movable optics, and aperture-based depth blur. */
-export function ThreePhotoStage({ image, sceneId, focalLength, sensor, aperture, focusDistance, language, onFallback }: Props) {
+export function ThreePhotoStage({ image, sceneId, focalLength, sensor, aperture, focusDistance, language, pauseRendering, onFallback }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const fallback = useRef(onFallback);
   const [failure, setFailure] = useState('');
   const [loadedCount, setLoadedCount] = useState(0);
   const [retryGeneration, setRetryGeneration] = useState(0);
   const liveOptics = useRef({ focalLength, sensor, aperture, focusDistance });
+  const renderPaused = useRef(pauseRendering);
   const tr = i18n.getFixedT(language);
   fallback.current = onFallback;
   liveOptics.current = { focalLength, sensor, aperture, focusDistance };
+  renderPaused.current = pauseRendering;
 
   useEffect(() => {
     const element = host.current;
@@ -148,7 +151,10 @@ export function ThreePhotoStage({ image, sceneId, focalLength, sensor, aperture,
       return;
     }
     const mobile = window.matchMedia('(max-width: 720px)').matches;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobile ? 1 : 1.35));
+    const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 4;
+    const lowPower = mobile || (navigator.hardwareConcurrency || 4) <= 4 || memory <= 4;
+    const frameInterval = lowPower ? 1000 / 30 : 1000 / 60;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, lowPower ? 1 : 1.35));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = sceneId === 'interior' ? 1.38 : 1.08;
@@ -204,6 +210,7 @@ export function ThreePhotoStage({ image, sceneId, focalLength, sensor, aperture,
 
     let pointerX = 0.5;
     let pointerY = 0.5;
+    let lastRenderedAt = -Infinity;
     const pointerMove = (event: PointerEvent) => {
       const rect = element.getBoundingClientRect();
       pointerX = Math.max(0, Math.min(1, (event.clientX - rect.left) / Math.max(1, rect.width)));
@@ -211,7 +218,8 @@ export function ThreePhotoStage({ image, sceneId, focalLength, sensor, aperture,
     };
     const render = (time: number) => {
       if (disposed) return;
-      if (!contextLost && document.visibilityState === 'visible') {
+      if (!renderPaused.current && !contextLost && document.visibilityState === 'visible' && time - lastRenderedAt >= frameInterval) {
+        lastRenderedAt = time;
         syncOptics();
         camera.rotation.y += ((0.5 - pointerX) * 0.045 - camera.rotation.y) * 0.055;
         camera.rotation.x += ((pointerY - 0.5) * 0.03 - camera.rotation.x) * 0.055;

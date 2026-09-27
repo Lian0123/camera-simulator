@@ -9,10 +9,10 @@ npm run build
 npm run test:e2e
 ```
 
-The Playwright server serves the built `dist` output at the `/camera-simulator/` project path, matching GitHub Pages. Browser projects cover Chromium, Firefox, WebKit, Pixel 7 emulation, and a 360 px touch viewport. End-to-end coverage includes capture / IndexedDB restore / editing / export, long-exposure cancellation, photo upload errors, denied camera permission and fallback, the mobile export entry point, and first-visit offline reload.
+The Playwright server serves the built `dist` output at the `/camera-simulator/` project path, matching GitHub Pages. Browser projects cover Chromium, Firefox, WebKit, Pixel 7 emulation, and a 360 px touch viewport. End-to-end coverage includes capture / IndexedDB restore / editing / export, rendered 3D assets and capture, the complete downloaded 3D pack rendering while offline, long-exposure cancellation, photo upload errors, denied camera permission and fallback, the mobile export entry point, and first-visit offline reload.
 
-Latest local run: `npm run typecheck`, `npm test` (13 tests), `npm run build`, and `npm run test:e2e -- --workers=1` all passed. The browser suite reported 35 passed and 15 expected skips across five projects. Skips are browser/device-specific checks that run in their designated project.
+Latest local run: `npm run typecheck`, `npm test` (13 tests), `npm run build`, and `npm run test:e2e -- --workers=1` all passed. The browser suite reported 37 passed and 23 expected skips across five projects. Skips are browser/device-specific checks that run in their designated project.
 
-The same checks passed in [GitHub Actions](https://github.com/Lian0123/camera-simulator/actions/runs/36343407574). After deployment, `https://lian0123.github.io/camera-simulator/` returned HTTP 200 and referenced its JavaScript and CSS beneath `/camera-simulator/assets/`.
+The main-branch [GitHub Actions workflow](https://github.com/Lian0123/camera-simulator/actions/workflows/deploy.yml) runs the same checks before deploying Pages. The original rewrite is live at `https://lian0123.github.io/camera-simulator/`; the 3D asset and offline-pack follow-up is awaiting its updated Actions run.
 
 `docs/screenshots/` contains captured desktop and mobile layouts. No physical phone or hardware camera was available in this automated run; those remain manual acceptance checks.
