@@ -11,7 +11,7 @@ interface Props {
   image: HTMLImageElement;
   sceneId: string;
   focalLength: number;
-  sensor: 'full-frame' | 'aps-c';
+  sensor: 'full-frame' | 'aps-c' | 'micro-four-thirds';
   aperture: number;
   focusDistance: number;
   language: 'zh' | 'en' | 'ja';
@@ -105,7 +105,7 @@ export function ThreePhotoStage({ image, sceneId, focalLength, sensor, aperture,
     const contextLostHandler = (event: Event) => { event.preventDefault(); contextLost = true; setFailure('stageContextError'); };
     const contextRestoredHandler = () => { contextLost = false; setFailure(''); resize(); };
 
-    const sensorHeight = liveOptics.current.sensor === 'full-frame' ? 24 : 16;
+    const sensorHeight = liveOptics.current.sensor === 'full-frame' ? 24 : liveOptics.current.sensor === 'aps-c' ? 16 : 13;
     const width = Math.max(1, element.clientWidth);
     const height = Math.max(1, element.clientHeight);
     const scene = new THREE.Scene();
@@ -176,7 +176,7 @@ export function ThreePhotoStage({ image, sceneId, focalLength, sensor, aperture,
     let previousSensor = sensor;
     const syncOptics = () => {
       const optics = liveOptics.current;
-      const currentSensorHeight = optics.sensor === 'full-frame' ? 24 : 16;
+      const currentSensorHeight = optics.sensor === 'full-frame' ? 24 : optics.sensor === 'aps-c' ? 16 : 13;
       if (optics.focalLength !== previousFocalLength || optics.sensor !== previousSensor) {
         const currentPlaneHeight = 25 * currentSensorHeight / optics.focalLength;
         background.geometry.dispose();

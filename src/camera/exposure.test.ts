@@ -33,6 +33,13 @@ describe('exposure arithmetic', () => {
     expect(resolveExposure(camera, 18).outOfRange).toBe(true);
   });
 
+  it('keeps Panasonic low/high native ISO ranges inside the exposure solver', () => {
+    const highBaseManual = { ...DEFAULT_CAMERA, mode: 'M' as const, autoISO: false, iso: 400, dualNativeISO: 'high' as const };
+    const lowBaseAuto = { ...DEFAULT_CAMERA, mode: 'A' as const, autoISO: true, dualNativeISO: 'low' as const };
+    expect(resolveExposure(highBaseManual, 8).iso).toBe(640);
+    expect(resolveExposure(lowBaseAuto, -2).iso).toBeLessThanOrEqual(800);
+  });
+
   it('formats shutters and caps long-exposure sampling work', () => {
     expect(formatShutter(1 / 125)).toBe('1/125');
     expect(formatShutter(2)).toBe('2″');

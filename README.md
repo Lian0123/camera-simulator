@@ -6,7 +6,8 @@ Stillframe is a quiet, local-first camera practice studio. Explore how exposure 
 
 ## What is included
 
-- P, A, S, and M exposure modes, Auto ISO, exposure compensation, focal length, sensor format, white balance, focus distance, and matrix / center-weighted / spot metering.
+- P, A, S, and M exposure modes, portrait / landscape / night / sports starting programs, Auto ISO, exposure compensation, focal length, full-frame / APS-C / Micro Four Thirds formats, white balance, focus distance, and matrix / center-weighted / spot metering.
+- Six selectable body profiles spanning Sony, Canon, Nikon, Fujifilm, Panasonic LUMIX, and OM SYSTEM, with body-specific picture-style menus, supported dual-native ISO, high-ISO noise reduction, soft-skin, and flash-look controls. The profile effects are documented software approximations, not a proprietary RAW/JPEG engine; see [camera profile notes](docs/CAMERA-PROFILES.md).
 - Three photographic practice scenes with a rule-of-thirds overlay, focus placement, exposure meter, live histogram, selectable crop, and independent PBR subject layers for 2D depth-of-field lessons. The WebGL stage adds locally bundled PBR models, focus blur, and a moving street car.
 - Local JPEG, PNG, and WebP photo import, plus an explicitly activated device camera. Stillframe does not request microphone access.
 - A capture library on the current device, in-browser color controls, JPEG / PNG export, and versioned settings import / export.

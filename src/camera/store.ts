@@ -3,6 +3,7 @@ import type { CameraSettings, Language, SceneDefinition, SourceKind, Workspace }
 import { isCameraSettings } from './settingsDocument';
 
 export const DEFAULT_CAMERA: CameraSettings = {
+  cameraProfile: 'lumix-s5iix', toneSimulation: 'lumix-standard', dualNativeISO: 'auto', highIsoNoiseReduction: 'standard', softSkin: 'off', flashSimulation: 'off', captureProgram: 'standard',
   mode: 'A', aperture: 5.6, shutter: 1 / 125, iso: 400, autoISO: true,
   exposureCompensation: 0, focalLength: 50, aspectRatio: 1.5, sensor: 'full-frame', whiteBalance: 5200,
   focusDistance: 3.2, autofocus: true, metering: 'matrix', showGrid: true, showHistogram: true,
@@ -11,10 +12,24 @@ export const DEFAULT_CAMERA: CameraSettings = {
 
 const restoreSettings = (): CameraSettings => {
   try {
-    const value = localStorage.getItem('stillframe.camera.v1');
+    const current = localStorage.getItem('stillframe.camera.v2');
+    const legacy = current ? null : localStorage.getItem('stillframe.camera.v1');
+    const value = current ?? legacy;
     if (!value) return DEFAULT_CAMERA;
     const parsed: unknown = JSON.parse(value);
-    return isCameraSettings(parsed) ? parsed : DEFAULT_CAMERA;
+    if (isCameraSettings(parsed)) return parsed;
+    // Migrate the previous local-only settings shape by keeping validated old fields
+    // and filling only newly-added controls from defaults.
+    if (!current && typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+      const old = parsed as Record<string, unknown>;
+      const merged = { ...DEFAULT_CAMERA } as Record<string, unknown>;
+      for (const key of Object.keys(DEFAULT_CAMERA)) if (key in old) merged[key] = old[key];
+      if (isCameraSettings(merged)) {
+        localStorage.setItem('stillframe.camera.v2', JSON.stringify(merged));
+        return merged;
+      }
+    }
+    return DEFAULT_CAMERA;
   } catch { return DEFAULT_CAMERA; }
 };
 
@@ -44,7 +59,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
   update: (key, value) => {
     const camera = { ...get().camera, [key]: value };
     set({ camera });
-    try { localStorage.setItem('stillframe.camera.v1', JSON.stringify(camera)); } catch { /* Private browsing still works without settings persistence. */ }
+    try { localStorage.setItem('stillframe.camera.v2', JSON.stringify(camera)); } catch { /* Private browsing still works without settings persistence. */ }
   },
   setSource: (source) => set({ source }),
   setScene: (scene) => set({ sceneId: scene.id }),

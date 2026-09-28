@@ -7,6 +7,7 @@ import './styles.css';
 import './polish.css';
 import './mobile.css';
 import './noise.css';
+import './cameraProfiles.css';
 
 setupI18n(useStudioStore.getState().language);
 

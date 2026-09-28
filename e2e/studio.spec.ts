@@ -135,6 +135,16 @@ test('adapts the workbench to a mobile viewport', async ({ page, isMobile }) => 
     await panel.click();
     await expect(panel).toHaveAttribute('aria-expanded', 'true');
   }
+  const body = page.getByRole('combobox', { name: 'Camera body' });
+  await expect(body).toBeVisible();
+  await body.selectOption('fujifilm-xt5');
+  await expect(page.getByRole('combobox', { name: 'Picture style' })).toHaveValue('fuji-provia');
+  await expect(page.getByRole('combobox', { name: 'Soft skin' })).toBeEnabled();
+  await expect(page.getByRole('combobox', { name: 'Dual native ISO' })).toBeDisabled();
+  if (isMobile && page.viewportSize()?.width === 360) {
+    await mkdir('docs/screenshots', { recursive: true });
+    await page.locator('.settings-rail').screenshot({ path: 'docs/screenshots/mobile-360-camera-settings.png' });
+  }
 });
 
 test('captures, reviews, edits and exports an image locally', async ({ page, isMobile }) => {
@@ -159,6 +169,27 @@ test('captures, reviews, edits and exports an image locally', async ({ page, isM
   const download = page.waitForEvent('download');
   await page.getByRole('button', { name: /Export image|Save photo/ }).last().click();
   expect((await download).suggestedFilename()).toMatch(/\.jpg$/);
+});
+
+test('compares captures with their saved camera body and tone style', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'The side-by-side camera metadata check runs on desktop.');
+  await openStudio(page);
+  await page.locator('[data-shutter]').click();
+  await expect(page.locator('.review-image')).toBeVisible();
+  await page.getByRole('tab').first().click();
+  await page.getByRole('combobox', { name: 'Camera body' }).selectOption('sony-a7iv');
+  await page.getByRole('combobox', { name: 'Picture style' }).selectOption('sony-pt');
+  await page.locator('[data-shutter]').click();
+  await expect(page.locator('.film-frame')).toHaveCount(2);
+  await page.getByRole('button', { name: 'Compare', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Side-by-side comparison' });
+  await expect(dialog.locator('.comparison-camera')).toContainText('Sony α7 IV');
+  const chooseOther = dialog.locator('select');
+  const firstCapture = await chooseOther.locator('option').nth(1).getAttribute('value');
+  await chooseOther.selectOption(firstCapture!);
+  await expect(dialog.locator('.comparison-camera')).toHaveCount(2);
+  await expect(dialog.locator('.comparison-camera').filter({ hasText: 'LUMIX S5IIX' })).toBeVisible();
+  await expect(dialog.locator('.comparison-camera').filter({ hasText: 'Sony α7 IV' })).toBeVisible();
 });
 
 test('a first online visit pre-caches the app and scene for offline use', async ({ page, browserName, isMobile }) => {

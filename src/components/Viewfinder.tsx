@@ -2,7 +2,8 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState, type DragEvent } 
 import { Aperture, Focus, Upload } from 'lucide-react';
 import type { CameraSettings, ResolvedExposure, SceneDefinition, SourceKind } from '../camera/types';
 import { formatShutter } from '../camera/exposure';
-import { isoNoiseAmount, makeImageFilter, type DevelopSettings } from '../camera/processor';
+import { flashOverlayColor, isoNoiseAmount, makeImageFilter, type DevelopSettings } from '../camera/processor';
+import { sensorCropFactor } from '../camera/profiles';
 import { imageFromUrl } from '../camera/scenes';
 import { LayeredSceneCanvas } from './LayeredSceneCanvas';
 
@@ -42,6 +43,8 @@ export function Viewfinder({ scene, source, customImage, videoRef, stream, camer
 
   const image = source === 'upload' ? customImage : sceneImage?.key === `${source}:${scene.id}` ? sceneImage.image : null;
   const filter = useMemo(() => makeImageFilter(camera, exposure, develop), [camera, exposure, develop]);
+  const flashColor = flashOverlayColor(camera.flashSimulation);
+  const zoom = Math.max(1, camera.focalLength / 50 * sensorCropFactor(camera.sensor));
   const isScene = source === 'scene2d' || source === 'scene3d';
 
   useEffect(() => {
@@ -97,11 +100,12 @@ export function Viewfinder({ scene, source, customImage, videoRef, stream, camer
           {source === 'camera' && <video className="live-video" ref={videoRef} playsInline muted autoPlay style={{ filter }} />}
           {source === 'camera' && !stream && <div className="media-message"><span className="message-glyph"><Focus size={24} /></span><p>{cameraError ? 'Camera access is unavailable. Upload a photo or use a practice scene.' : text.camera}</p><button className="quiet-button" onClick={(event) => { event.stopPropagation(); onStartCamera(); }} disabled={cameraStarting}>{cameraStarting ? '…' : text.start}</button><button className="quiet-button" onClick={(event) => { event.stopPropagation(); onUseScene(); }}>{text.retry}</button></div>}
           {source === 'upload' && !customImage && <div className="media-message"><span className="message-glyph"><Upload size={24} /></span><p>{text.upload}</p><button className="quiet-button" onClick={(event) => { event.stopPropagation(); inputRef.current?.click(); }}>{text.open}</button></div>}
-          {source === 'upload' && customImage && <img className="upload-photo" src={customImage.src} alt="Uploaded photo to simulate a camera image" style={{ filter, transform: `scale(${Math.max(1, camera.focalLength / 50 * (camera.sensor === 'aps-c' ? 1.5 : 1))})` }} />}
+          {source === 'upload' && customImage && <img className="upload-photo" src={customImage.src} alt="Uploaded photo to simulate a camera image" style={{ filter, transform: `scale(${zoom})` }} />}
           {isScene && !image && <div className="media-message"><span className="loading-dot" /><p>{error || text.scene}</p></div>}
-          {isScene && source === 'scene2d' && image && <LayeredSceneCanvas scene={scene} background={image} camera={camera} pauseRendering={pause3dRendering} zoom={Math.max(1, camera.focalLength / 50 * (camera.sensor === 'aps-c' ? 1.5 : 1))} />}
+          {isScene && source === 'scene2d' && image && <LayeredSceneCanvas scene={scene} background={image} camera={camera} pauseRendering={pause3dRendering} zoom={zoom} />}
           <div className="scene-shade" />
-          <div className="iso-noise" style={{ opacity: Math.min(0.18, camera.filmGrain / 200 + isoNoiseAmount(exposure.iso) * 0.006) }} aria-hidden="true" />
+          {camera.flashSimulation !== 'off' && <div className="flash-effect" style={{ background: `radial-gradient(ellipse at 50% 44%, ${flashColor} 0%, transparent 70%)` }} aria-hidden="true" />}
+          <div className="iso-noise" style={{ opacity: Math.min(0.18, camera.filmGrain / 200 + isoNoiseAmount(exposure.iso, camera) * 0.006) }} aria-hidden="true" />
           {highlightMask && <img className="highlight-mask" src={highlightMask} alt="" aria-hidden="true" />}
         </div>
         {camera.showGrid && <div className="composition-grid" aria-hidden="true"><span /><span /><i /><i /></div>}
@@ -110,7 +114,7 @@ export function Viewfinder({ scene, source, customImage, videoRef, stream, camer
         <div className="exposure-warning" aria-live="polite">{exposure.outOfRange ? (exposure.deviation > 0 ? 'OVER + ' : 'UNDER − ') + Math.abs(exposure.deviation).toFixed(1) + ' EV' : text.focus}</div>
         <div className="viewfinder-chrome top-left"><span className="live-indicator" /> {source === 'camera' ? 'REC' : isScene ? 'SIM' : 'PHOTO'}</div>
         <div className="viewfinder-chrome top-right">{camera.focalLength} mm <span className="chroma-line">/</span> f {exposure.aperture}</div>
-        <div className="viewfinder-chrome bottom-left">{camera.sensor === 'full-frame' ? '35 mm' : 'APS-C'} <span className="chroma-line">·</span> ISO {exposure.iso}</div>
+        <div className="viewfinder-chrome bottom-left">{camera.sensor === 'full-frame' ? '35 mm' : camera.sensor === 'aps-c' ? 'APS-C' : 'MFT'} <span className="chroma-line">·</span> ISO {exposure.iso}</div>
         <div className="viewfinder-chrome bottom-right">{formatShutter(exposure.shutter)} <span className="chroma-line">·</span> {exposure.deviation >= 0 ? '+' : ''}{exposure.deviation.toFixed(1)} EV</div>
         {dragging && <div className="drop-shade"><Upload size={30} /><span>{text.upload}</span></div>}
         {error && source === 'upload' && <div className="source-warning">{error}<button onClick={(event) => { event.stopPropagation(); onUseScene(); }}>{text.retry}</button></div>}

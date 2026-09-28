@@ -29,4 +29,22 @@ describe('camera studio', () => {
     await userEvent.click(screen.getByRole('button', { name: /Start camera/i }));
     expect(getUserMedia).toHaveBeenCalledWith(expect.objectContaining({ audio: false }));
   });
+
+  it('switches brand-specific controls and applies subject-program starting settings', async () => {
+    const user = userEvent.setup();
+    render(<Studio />);
+    const body = screen.getByRole('combobox', { name: 'Camera body' });
+    expect(screen.getByRole('combobox', { name: 'Dual native ISO' })).toBeEnabled();
+
+    await user.selectOptions(body, 'fujifilm-xt5');
+    expect(useStudioStore.getState().camera.sensor).toBe('aps-c');
+    expect(screen.getByRole('combobox', { name: 'Picture style' })).toHaveValue('fuji-provia');
+    expect(screen.getByRole('combobox', { name: 'Dual native ISO' })).toBeDisabled();
+    expect(screen.getByRole('combobox', { name: 'Soft skin' })).toBeEnabled();
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Subject program' }), 'portrait');
+    expect(useStudioStore.getState().camera.aperture).toBe(2.8);
+    expect(useStudioStore.getState().camera.softSkin).toBe('standard');
+    expect(useStudioStore.getState().camera.toneSimulation).toBe('fuji-pro-neg-std');
+  });
 });

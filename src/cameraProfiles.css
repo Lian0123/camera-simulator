@@ -1,0 +1,17 @@
+.camera-profile-card{margin:12px 0 7px;padding:10px 11px;border:1px solid #34352e;background:#1a1b17}
+.camera-profile-card .setting-grid{margin:0;gap:8px}
+.camera-profile-card p,.software-effect-note{margin:8px 0 0;color:#85847b;font-size:9px;line-height:1.45}
+.advanced-camera-grid{margin:7px 0 0;gap:8px}
+.camera-mode-status{min-height:43px;padding:6px 9px;display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid #34352e;background:#191a16;color:#aaa89f;font-size:9px}
+.camera-mode-status strong{color:var(--amber-bright);font:11px var(--mono);white-space:nowrap}
+.software-effect-note{margin:7px 0 2px;color:#78786f}
+.flash-effect{position:absolute;inset:0;z-index:2;pointer-events:none;mix-blend-mode:screen}
+.scene-shade{z-index:1}
+.iso-noise{z-index:3}
+.highlight-mask{z-index:4}
+.sensor-row .mini-segment{flex:1;min-width:0}
+.sensor-row .mini-segment button{flex:1;min-width:0;padding:0 4px;font-size:8px}
+.review-camera-info{display:flex;flex-direction:column;gap:2px}
+.review-camera-info small{color:rgba(226,221,210,.75);font-size:7px;line-height:1.3}
+.comparison-camera{display:block;margin-top:3px;color:#c1b9aa;font:8px var(--mono);line-height:1.4}
+@media(max-width:700px){.camera-profile-card{padding:9px}.camera-profile-card p,.software-effect-note{font-size:8px}.advanced-camera-grid{gap:7px}.camera-mode-status{min-height:41px;padding:5px 7px;font-size:8px}}

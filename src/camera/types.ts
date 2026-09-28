@@ -2,8 +2,21 @@ export type ShootingMode = 'P' | 'A' | 'S' | 'M';
 export type SourceKind = 'scene3d' | 'scene2d' | 'upload' | 'camera';
 export type Workspace = 'shoot' | 'playback' | 'edit';
 export type Language = 'zh' | 'en' | 'ja';
+export type DualNativeIsoMode = 'auto' | 'low' | 'high';
+export type CameraProfileId = 'sony-a7iv' | 'canon-r6ii' | 'nikon-z8' | 'fujifilm-xt5' | 'lumix-s5iix' | 'om-3';
+export type NoiseReductionLevel = 'off' | 'low' | 'standard' | 'high';
+export type SoftSkinLevel = 'off' | 'low' | 'standard' | 'high';
+export type FlashSimulation = 'off' | 'fill' | 'slow-sync' | 'rear-curtain';
+export type SensorFormat = 'full-frame' | 'aps-c' | 'micro-four-thirds';
 
 export interface CameraSettings {
+  cameraProfile: CameraProfileId;
+  toneSimulation: string;
+  dualNativeISO: DualNativeIsoMode;
+  highIsoNoiseReduction: NoiseReductionLevel;
+  softSkin: SoftSkinLevel;
+  flashSimulation: FlashSimulation;
+  captureProgram: 'standard' | 'portrait' | 'landscape' | 'night' | 'sports';
   mode: ShootingMode;
   aperture: number;
   shutter: number;
@@ -12,7 +25,7 @@ export interface CameraSettings {
   exposureCompensation: number;
   focalLength: number;
   aspectRatio: 1 | 1.3333333333333333 | 1.5 | 1.7777777777777777;
-  sensor: 'full-frame' | 'aps-c';
+  sensor: SensorFormat;
   whiteBalance: number;
   focusDistance: number;
   autofocus: boolean;
@@ -87,7 +100,7 @@ export interface CaptureRecord {
 }
 
 export interface SettingsDocument {
-  schemaVersion: 1;
+  schemaVersion: 2;
   exportedAt: string;
   settings: CameraSettings;
   source: SourceKind;

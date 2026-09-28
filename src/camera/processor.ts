@@ -1,5 +1,6 @@
 import type { CameraSettings, ResolvedExposure } from './types';
 import { evBrightness } from './exposure';
+import { getToneStyle, selectedNativeIso, sensorCropFactor } from './profiles';
 
 export interface DevelopSettings {
   exposure: number;
@@ -17,8 +18,25 @@ export const DEFAULT_DEVELOP: DevelopSettings = {
   exposure: 0, contrast: 0, highlights: 0, shadows: 0, temperature: 0, saturation: 0, vignette: 0, grain: 0, preset: 'neutral',
 };
 
-export function isoNoiseAmount(iso: number): number {
-  return Math.max(0, Math.log2(Math.max(100, iso) / 100) * 3);
+export function isoNoiseAmount(iso: number, camera?: CameraSettings): number {
+  let noise = Math.max(0, Math.log2(Math.max(100, iso) / 100) * 3);
+  if (camera) {
+    const native = selectedNativeIso(camera, iso);
+    if (native && native >= 640 && iso >= native) noise *= 0.78;
+    const reduction = { off: 0, low: 0.22, standard: 0.44, high: 0.68 }[camera.highIsoNoiseReduction];
+    noise *= 1 - reduction;
+  }
+  return noise;
+}
+
+export function noiseReductionBlur(camera: CameraSettings, iso: number): number {
+  const amount = Math.max(0, Math.min(1, Math.log2(Math.max(100, iso) / 800) / 5));
+  const level = { off: 0, low: 0.32, standard: 0.68, high: 1 }[camera.highIsoNoiseReduction];
+  return amount * level * 0.72;
+}
+
+export function skinSofteningBlur(camera: CameraSettings): number {
+  return { off: 0, low: 0.16, standard: 0.3, high: 0.48 }[camera.softSkin];
 }
 
 const presets: Record<string, Partial<DevelopSettings>> = {
@@ -33,16 +51,35 @@ export function getDevelopSettings(settings: DevelopSettings): DevelopSettings {
   return { ...settings, ...(presets[settings.preset] ?? {}) };
 }
 
-export function makeImageFilter(camera: CameraSettings, exposure: ResolvedExposure, develop = DEFAULT_DEVELOP): string {
+export function makeImageFilter(camera: CameraSettings, exposure: ResolvedExposure, develop = DEFAULT_DEVELOP, preserveCapturedBase = false): string {
   const photo = getDevelopSettings(develop);
   const brightness = evBrightness(exposure.deviation + photo.exposure);
-  const contrast = Math.max(0.2, 1 + photo.contrast / 100);
-  const saturation = Math.max(0, 1 + photo.saturation / 100);
-  const warmth = photo.temperature / 18;
+  const look = preserveCapturedBase ? { contrast: 0, saturation: 0, temperature: 0, hue: 0, sepia: 0 } : getToneStyle(camera);
+  const contrast = Math.max(0.2, (1 + photo.contrast / 100) * (1 + look.contrast / 100));
+  const saturation = Math.max(0, (1 + photo.saturation / 100) * (1 + look.saturation / 100));
+  const warmth = (photo.temperature + look.temperature) / 18;
   const white = Math.max(2300, Math.min(9500, camera.whiteBalance + warmth * 55));
-  const sepia = Math.max(0, Math.min(0.45, (white - 5000) / 10000));
-  const hue = (5000 - white) / 250;
-  return `brightness(${brightness.toFixed(3)}) contrast(${contrast.toFixed(3)}) saturate(${saturation.toFixed(3)}) sepia(${sepia.toFixed(3)}) hue-rotate(${hue.toFixed(1)}deg)`;
+  const sepia = Math.max(0, Math.min(0.5, (white - 5000) / 10000 + look.sepia));
+  const hue = (5000 - white) / 250 + look.hue;
+  const blur = preserveCapturedBase ? 0 : Math.min(1.1, noiseReductionBlur(camera, exposure.iso) + skinSofteningBlur(camera));
+  return `brightness(${brightness.toFixed(3)}) contrast(${contrast.toFixed(3)}) saturate(${saturation.toFixed(3)}) sepia(${sepia.toFixed(3)}) hue-rotate(${hue.toFixed(1)}deg)${blur > 0 ? ` blur(${blur.toFixed(2)}px)` : ''}`;
+}
+
+export function flashOverlayColor(mode: CameraSettings['flashSimulation']): string {
+  if (mode === 'off') return 'transparent';
+  const opacity = mode === 'fill' ? 0.14 : mode === 'slow-sync' ? 0.18 : 0.2;
+  return `rgba(255, 237, 207, ${opacity})`;
+}
+
+function applyFlash(ctx: CanvasRenderingContext2D, width: number, height: number, mode: CameraSettings['flashSimulation']): void {
+  if (mode === 'off') return;
+  const color = flashOverlayColor(mode);
+  const gradient = ctx.createRadialGradient(width * 0.5, height * 0.44, 0, width * 0.5, height * 0.44, Math.max(width, height) * 0.7);
+  gradient.addColorStop(0, color);
+  gradient.addColorStop(0.5, color.replace(/, ([\d.]+)\)$/, (_, opacity: string) => `, ${Number(opacity) * 0.44})`));
+  gradient.addColorStop(1, 'rgba(255,237,207,0)');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
 }
 
 export function renderDevelopedImage(
@@ -60,7 +97,7 @@ export function renderDevelopedImage(
   let sx = 0; let sy = 0; let sw = width; let sh = height;
   if (imageRatio > ratio) { sw = height * ratio; sx = (width - sw) / 2; }
   else if (imageRatio < ratio) { sh = width / ratio; sy = (height - sh) / 2; }
-  const fieldOfViewZoom = preserveCapturedBase ? 1 : Math.max(1, camera.focalLength / 50 * (camera.sensor === 'aps-c' ? 1.5 : 1));
+  const fieldOfViewZoom = preserveCapturedBase ? 1 : Math.max(1, camera.focalLength / 50 * sensorCropFactor(camera.sensor));
   if (fieldOfViewZoom > 1) {
     sw /= fieldOfViewZoom; sh /= fieldOfViewZoom;
     sx = (width - sw) / 2; sy = (height - sh) / 2;
@@ -78,7 +115,7 @@ export function renderDevelopedImage(
   const canvasHeight = canvas.height;
   const photo = getDevelopSettings(develop);
   const processingCamera = preserveCapturedBase ? { ...camera, whiteBalance: 5200 } : camera;
-  ctx.filter = makeImageFilter(processingCamera, { ...exposure, deviation: preserveCapturedBase ? 0 : exposure.deviation }, photo);
+  ctx.filter = makeImageFilter(processingCamera, { ...exposure, deviation: preserveCapturedBase ? 0 : exposure.deviation }, photo, preserveCapturedBase);
   ctx.drawImage(image, sx, sy, sw, sh, 0, 0, canvasWidth, canvasHeight);
   ctx.filter = 'none';
 
@@ -94,6 +131,8 @@ export function renderDevelopedImage(
     ctx.putImageData(tonal, 0, 0);
   }
 
+  if (!preserveCapturedBase) applyFlash(ctx, canvasWidth, canvasHeight, camera.flashSimulation);
+
   const vignette = Math.max(0, Math.min(0.85, photo.vignette / 100));
   if (vignette > 0) {
     const gradient = ctx.createRadialGradient(canvasWidth / 2, canvasHeight / 2, canvasHeight * 0.13, canvasWidth / 2, canvasHeight / 2, canvasHeight * 0.82);
@@ -102,7 +141,7 @@ export function renderDevelopedImage(
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
   }
-  const grain = Math.max(0, Math.min(35, (preserveCapturedBase ? 0 : camera.filmGrain + isoNoiseAmount(exposure.iso)) + photo.grain));
+  const grain = Math.max(0, Math.min(35, (preserveCapturedBase ? 0 : camera.filmGrain + isoNoiseAmount(exposure.iso, camera)) + photo.grain));
   if (grain > 0) {
     const imageData = ctx.getImageData(0, 0, outputWidth, outputHeight);
     let seed = 8917;
